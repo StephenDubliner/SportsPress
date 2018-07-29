@@ -15,6 +15,7 @@
  * @package SportsPress
  * @category Core
  * @author ThemeBoy
+ * Bitbucket Plugin URI: https://github.com/StephenDubliner/SportsPress
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
