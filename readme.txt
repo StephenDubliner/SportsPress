@@ -1,4 +1,4 @@
-=== SportsPress - Sports Club & League Manager ===
+=== SportsPress - Sports Club & League Manager Badminton rank edition ===
 Contributors: ThemeBoy, brianmiyaji, aylaview, savvasha, nabil_kadimi
 Tags: calendars, club, club management, esports, events, fixtures, leagues, league management, sports, sports club, sports data, team rosters
 Donate link: http://tboy.co/donate
