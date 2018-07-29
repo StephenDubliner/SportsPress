@@ -8,6 +8,7 @@
  * Author URI: http://themeboy.com
  * Requires at least: 3.8
  * Tested up to: 4.9
+ * GitHub Plugin URI: https://github.com/StephenDubliner/SportsPress
  *
  * Text Domain: sportspress
  * Domain Path: /languages/
@@ -15,7 +16,6 @@
  * @package SportsPress
  * @category Core
  * @author ThemeBoy
- * GitHub Plugin URI: https://github.com/StephenDubliner/SportsPress
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
