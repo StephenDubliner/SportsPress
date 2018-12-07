@@ -8,7 +8,7 @@
  * https://wordpress.org/support/topic/timezone-issues-with-schedule-calendar-list/
  *
  * @class 		SP_Calendar
- * @version   2.5.5
+ * @version   2.6.11
  * @package		SportsPress/Classes
  * @category	Class
  * @author 		ThemeBoy
@@ -39,6 +39,12 @@ class SP_Calendar extends SP_Secondary_Post {
 
 	/** @var int The team ID. */
 	public $team;
+	
+	/** @var array The teams IDs. */
+	public $teams_past;
+	
+	/** @var string The event date. */
+	public $date_before;
 
 	/** @var int The player ID. */
 	public $player;
@@ -48,6 +54,9 @@ class SP_Calendar extends SP_Secondary_Post {
 	
 	/** @var int The event ID. */
 	public $event;
+	
+	/** @var integer The event format slug. */
+	public $event_format;
 
 	/**
 	 * __construct function.
@@ -102,6 +111,9 @@ class SP_Calendar extends SP_Secondary_Post {
 
 		if ( ! $this->day )
 			$this->day = get_post_meta( $this->ID, 'sp_day', true );
+		
+		if ( ! $this->event_format )
+			$this->event_format = get_post_meta( $this->ID, 'sp_event_format', true );
 
 		if ( ! $this->number )
 			$this->number = -1;
@@ -116,6 +128,27 @@ class SP_Calendar extends SP_Secondary_Post {
 	public function data() {
 		global $pagenow;
 
+		$weekday = array (
+					0 => 'Sunday',
+					1 => 'Monday',
+					2 => 'Tuesday',
+					3 => 'Wednesday',
+					4 => 'Thursday',
+					5 => 'Friday',
+					6 => 'Saturday',
+				);
+		
+		$start_of_week = get_option('start_of_week');
+		
+		$firstday = $weekday[ $start_of_week ];
+		if ( $start_of_week != 0 ) {
+			$lastday = $weekday[ ( $start_of_week - 1 ) ];
+		}else{
+			$lastday = $weekday[6];
+		}
+		
+		$today = date('l');
+		
 		$args = array(
 			'post_type' => 'sp_event',
 			'posts_per_page' => $this->number,
@@ -134,7 +167,7 @@ class SP_Calendar extends SP_Secondary_Post {
 			switch ( $this->date ):
 				case '-day':
 					$date = new DateTime( date_i18n('Y-m-d') );
-			    $date->modify( '-1 day' );
+					$date->modify( '-1 day' );
 					$args['year'] = $date->format('Y');
 					$args['day'] = $date->format('j');
 					$args['monthnum'] = $date->format('n');
@@ -146,26 +179,80 @@ class SP_Calendar extends SP_Secondary_Post {
 					break;
 				case '+day':
 					$date = new DateTime( date_i18n('Y-m-d') );
-			    $date->modify( '+1 day' );
+					$date->modify( '+1 day' );
 					$args['year'] = $date->format('Y');
 					$args['day'] = $date->format('j');
 					$args['monthnum'] = $date->format('n');
 					break;
 				case '-w':
-					$date = new DateTime( date_i18n('Y-m-d') );
-			    $date->modify( '-1 week' );
-					$args['year'] = $date->format('Y');
-					$args['w'] = $date->format('W');
+					if ( $start_of_week != '1' ) { //If start of week is not Monday
+						if ( $today == $firstday ) { //If today is start of Week
+							$after = date_i18n('Y-m-d', strtotime("last $firstday"));
+							$before = date_i18n('Y-m-d', strtotime("last $lastday")).' 23:59:59';
+						}else{
+							$after = date_i18n('Y-m-d', strtotime("-2 $firstday"));
+							$before = date_i18n('Y-m-d', strtotime("last $lastday")).' 23:59:59';
+						}
+						$args['date_query'] = array(
+												array(
+													'after'     => $after,
+													'before'     => $before,
+													'inclusive' => true,
+												),
+											);
+					}else{
+						$date = new DateTime( date_i18n('Y-m-d') );
+						$date->modify( '-1 week' );
+						$args['year'] = $date->format('Y');
+						$args['w'] = $date->format('W');
+					}
 					break;
 				case 'w':
-					$args['year'] = date_i18n('Y');
-					$args['w'] = date_i18n('W');
+					if ( $start_of_week != '1' ) { //If start of week is not Monday
+						if ( $today == $firstday ) { //If today is start of Week
+							$after = date_i18n('Y-m-d');
+							$before = date_i18n('Y-m-d', strtotime("next $lastday")).' 23:59:59';
+						}elseif ( $today == $lastday ) { //If today is the end of Week
+							$after = date_i18n('Y-m-d', strtotime("last $firstday"));
+							$before = date_i18n('Y-m-d').' 23:59:59';
+						}else{
+							$after = date_i18n('Y-m-d', strtotime("last $firstday"));
+							$before = date_i18n('Y-m-d', strtotime("next $lastday")).' 23:59:59';
+						}
+						$args['date_query'] = array(
+												array(
+													'after'     => $after,
+													'before'     => $before,
+													'inclusive' => true,
+												),
+											);
+					}else{
+						$args['year'] = date_i18n('Y');
+						$args['w'] = date_i18n('W');
+					}
 					break;
 				case '+w':
-					$date = new DateTime( date_i18n('Y-m-d') );
-			    $date->modify( '+1 week' );
-					$args['year'] = $date->format('Y');
-					$args['w'] = $date->format('W');
+					if ( $start_of_week != '1' ) { //If start of week is not Monday
+						if ( $today == $lastday ) { //If today is the end of Week
+							$after = date_i18n('Y-m-d', strtotime("next $firstday"));
+							$before = date_i18n('Y-m-d', strtotime("next $lastday")).' 23:59:59';
+						}else{ 
+							$after = date_i18n('Y-m-d', strtotime("next $firstday"));
+							$before = date_i18n('Y-m-d', strtotime("+2 $lastday")).' 23:59:59';
+						}
+						$args['date_query'] = array(
+												array(
+													'after'     => $after,
+													'before'     => $before,
+													'inclusive' => true,
+												),
+											);
+					}else{
+						$date = new DateTime( date_i18n('Y-m-d') );
+						$date->modify( '+1 week' );
+						$args['year'] = $date->format('Y');
+						$args['w'] = $date->format('W');
+					}
 					break;
 				case 'range':
 					if ( $this->relative ):
@@ -197,6 +284,24 @@ class SP_Calendar extends SP_Secondary_Post {
 			);
 		endif;
 
+		// If we are showing past meetings filter by team's id and current event date
+		if ( $this->teams_past ):
+			foreach ( $this->teams_past as $team_past ):
+				$args['meta_query'][] = array(
+					'key' => 'sp_team',
+					'value' => $team_past,
+					'compare' => '=',
+				);
+			endforeach;
+			$args['date_query'] = array(
+				array(
+					'before' => $this->date_before,
+					'inclusive' => false,
+				)
+			
+			);
+		endif;
+		
 		if ( $this->player ):
 			$args['meta_query'][] = array(
 				'key' => 'sp_player',
@@ -205,6 +310,13 @@ class SP_Calendar extends SP_Secondary_Post {
 			);
 		endif;
 
+		if ( $this->event_format && 'all' != $this->event_format ):
+			$args['meta_query'][] = array(
+				'key' => 'sp_format',
+				'value' => $this->event_format,
+			);
+		endif;
+		
 		if ( $this->day ):
 			$args['meta_query'][] = array(
 				'key' => 'sp_day',
@@ -309,6 +421,17 @@ class SP_Calendar extends SP_Secondary_Post {
 		else:
 			$events = null;
 		endif;
+		
+		// Filter out unessecary events if we are showing past meetings
+		if ( $this->teams_past ){
+			$events_past = array();
+			foreach ( $events as $single_event ) {
+				if ( sort( get_post_meta( $single_event->ID, 'sp_team' ) ) === sort( $this->teams_past ) ) {
+					$events_past[] = $single_event;
+				}
+			}
+			$events = $events_past;
+		}
 
 		// Remove any calendar selection filters
 		remove_filter( 'posts_where', array( $this, 'range' ) );

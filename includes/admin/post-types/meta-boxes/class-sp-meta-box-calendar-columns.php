@@ -5,7 +5,7 @@
  * @author 		ThemeBoy
  * @category 	Admin
  * @package 	SportsPress/Admin/Meta_Boxes
- * @version		2.5
+ * @version		2.6.11
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -28,6 +28,8 @@ class SP_Meta_Box_Calendar_Columns {
 		}
 
 		$columns = array();
+		
+		$columns['date'] = __( 'Date', 'sportspress' );
 
 		if ( 'teams' === $title_format ) {
 			$columns[ 'event' ] = __( 'Home', 'sportspress' ) . ' | ' . __( 'Away', 'sportspress' );

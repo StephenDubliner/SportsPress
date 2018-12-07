@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Registers post types and taxonomies
  *
  * @class 		SP_Post_types
- * @version		2.6.1
+ * @version		2.6.11
  * @package		SportsPress/Classes
  * @category	Class
  * @author 		ThemeBoy
@@ -223,6 +223,8 @@ class SP_Post_types {
 	public static function register_post_types() {
 		do_action( 'sportspress_register_post_type' );
 
+		$show_in_rest = ! function_exists( 'register_block_type' );
+
 		register_post_type( 'sp_result',
 			apply_filters( 'sportspress_register_post_type_result',
 				array(
@@ -392,6 +394,9 @@ class SP_Post_types {
 						'search_items' 			=> __( 'Search', 'sportspress' ),
 						'not_found' 			=> __( 'No results found.', 'sportspress' ),
 						'not_found_in_trash' 	=> __( 'No results found.', 'sportspress' ),
+						'set_featured_image' 	=> __( 'Select Icon', 'sportspress' ),
+ 						'remove_featured_image' => __( 'Remove icon', 'sportspress' ),
+ 						'use_featured_image' 	=> __( 'Add icon', 'sportspress' ),
 					),
 					'public' 				=> false,
 					'show_ui' 				=> true,
@@ -433,7 +438,7 @@ class SP_Post_types {
 			'has_archive' 			=> false,
 			'show_in_nav_menus' 	=> true,
 			'menu_icon' 			=> 'dashicons-calendar',
-			'show_in_rest' 			=> true,
+			'show_in_rest' 			=> $show_in_rest,
 			'rest_controller_class' => 'SP_REST_Posts_Controller',
 			'rest_base' 			=> 'events',
 		);
@@ -474,7 +479,7 @@ class SP_Post_types {
 					'has_archive' 			=> false,
 					'show_in_nav_menus' 	=> true,
 					'menu_icon' 			=> 'dashicons-shield-alt',
-					'show_in_rest' 			=> true,
+					'show_in_rest' 			=> $show_in_rest,
 					'rest_controller_class' => 'SP_REST_Posts_Controller',
 					'rest_base' 			=> 'teams',
 				)
@@ -511,7 +516,7 @@ class SP_Post_types {
 					'has_archive' 			=> false,
 					'show_in_nav_menus' 	=> true,
 					'menu_icon' 			=> 'dashicons-groups',
-					'show_in_rest' 			=> true,
+					'show_in_rest' 			=> $show_in_rest,
 					'rest_controller_class' => 'SP_REST_Posts_Controller',
 					'rest_base' 			=> 'players',
 				)
@@ -548,7 +553,7 @@ class SP_Post_types {
 					'has_archive' 			=> false,
 					'show_in_nav_menus' 	=> true,
 					'menu_icon' 			=> 'dashicons-businessman',
-					'show_in_rest' 			=> true,
+					'show_in_rest' 			=> $show_in_rest,
 					'rest_controller_class' => 'SP_REST_Posts_Controller',
 					'rest_base' 			=> 'staff',
 				)

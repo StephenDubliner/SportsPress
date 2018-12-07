@@ -5,7 +5,7 @@
  * The SportsPress event class handles individual event data.
  *
  * @class 		SP_Event
- * @version		2.6.6
+ * @version		2.6.11
  * @package		SportsPress/Classes
  * @category	Class
  * @author 		ThemeBoy
@@ -49,10 +49,6 @@ class SP_Event extends SP_Custom_Post{
 
 		// Get results for all teams
 		$data = sp_array_combine( $teams, $results, true );
-		
-		if ( 'yes' === get_option( 'sportspress_event_reverse_teams', 'no' ) ) {
-			$data = array_reverse( $data, true );
-		}
 
 		if ( $admin ):
 			return array( $columns, $usecolumns, $data );
@@ -188,7 +184,7 @@ class SP_Event extends SP_Custom_Post{
 					if ( ! is_array( $players ) ) continue;
 
 					foreach ( $players as $player => $player_performance ):
-						if ( ! is_array( $player_performance ) ) continue;
+						if ( ! is_array( $player_performance ) || ! $player ) continue;
 
 						// Prepare existing values for equation calculation
 						$vars = $player_performance;
@@ -569,6 +565,9 @@ class SP_Event extends SP_Custom_Post{
 				),
 			),
 		) );
+		if ( ! is_array( $duties ) ) {
+			return array();
+		}
 
 		if ( ! $include_empty && empty( $duties ) ) return null;
 
@@ -576,11 +575,12 @@ class SP_Event extends SP_Custom_Post{
 		$appointments = array();
 
 		foreach ( $duties as $duty ) {
-			$duty_appointments = sp_array_value( $officials, $duty->term_id, null );
+			$duty_appointments = sp_array_value( $officials, $duty->term_id, array() );
 
 			if ( ! $include_empty && empty( $duty_appointments ) ) continue;
 
 			$appointed_officials = array();
+			
 			foreach ( $duty_appointments as $duty_appointment ) {
 				$appointed_officials[ $duty_appointment ] = get_the_title( $duty_appointment );
 			}

@@ -4,7 +4,7 @@
  *
  * @author 		ThemeBoy
  * @package 	SportsPress/Templates
- * @version   2.6.5
+ * @version   2.6.11
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -106,6 +106,16 @@ if ( $link_events ) $title = '<a href="' . get_post_permalink( $post->ID, false,
 			<?php echo $title; ?>
 		</h3>
 		<?php
+		if ( isset( $show_date ) && $show_date ):
+			?>
+			<h5 class="event-date sp-event-date">
+				<?php
+				echo get_the_time( get_option( 'date_format' ), $post );
+				?>
+			</h5>
+			<?php
+		endif;
+		
 		if ( isset( $show_venue ) && $show_venue ):
 			$venues = get_the_terms( $post->ID, 'sp_venue' );
 			if ( $venues ):
@@ -149,7 +159,7 @@ if ( $link_events ) $title = '<a href="' . get_post_permalink( $post->ID, false,
 		$s = $interval->invert ? 0 : $interval->s;
 		?>
 		<p class="countdown sp-countdown<?php if ( $days >= 10 ): ?> long-countdown<?php endif; ?>">
-			<time datetime="<?php echo $post->post_date; ?>"<?php if ( $live ): ?> data-countdown="<?php echo str_replace( '-', '/', $post->post_date ); ?>"<?php endif; ?>>
+			<time datetime="<?php echo $post->post_date; ?>"<?php if ( $live ): ?> data-countdown="<?php echo str_replace( '-', '/', get_gmt_from_date( $post->post_date ) ); ?>"<?php endif; ?>>
 				<span><?php echo sprintf( '%02s', $days ); ?> <small><?php _e( 'days', 'sportspress' ); ?></small></span>
 				<span><?php echo sprintf( '%02s', $h ); ?> <small><?php _e( 'hrs', 'sportspress' ); ?></small></span>
 				<span><?php echo sprintf( '%02s', $i ); ?> <small><?php _e( 'mins', 'sportspress' ); ?></small></span>

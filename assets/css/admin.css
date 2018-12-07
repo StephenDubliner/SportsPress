@@ -322,6 +322,11 @@ table.widefat.sp-data-table input[type="number"] {
     padding: 3px 5px;
 }
 
+table.widefat.sp-data-table input[type="text"]::placeholder,
+table.widefat.sp-data-table input[type="number"]::placeholder {
+	color: silver;
+}
+
 table.widefat.sp-data-table input.small-text {
 	width: 50px;
 	min-width: 0;
@@ -1021,6 +1026,7 @@ table.sp-status-table td mark.yes {
 	display: inline;
 }
 .about-sportspress-wrap .sp-welcome-logo img {
+	width: auto;
 	border: none;
 }
 .about-sportspress-wrap .sp-about-text {

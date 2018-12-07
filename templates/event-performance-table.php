@@ -4,7 +4,7 @@
  *
  * @author 		ThemeBoy
  * @package 	SportsPress/Templates
- * @version		2.5.5
+ * @version		2.6.11
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -28,6 +28,7 @@ $identifier = uniqid( 'performance_' );
 if ( true == $responsive && $mode == 'values' ){
 	//sportspress_responsive_tables_css( $identifier );
 }
+$i = 0;
 ?>
 <div class="sp-template sp-template-event-performance sp-template-event-performance-<?php echo $mode; ?><?php if ( isset( $class ) ) { echo ' ' . $class; } ?>">
 	<?php if ( $caption ): ?>
@@ -75,7 +76,6 @@ if ( true == $responsive && $mode == 'values' ){
 
 					$stars_type = get_option( 'sportspress_event_performance_stars_type', 0 );
 
-					$i = 0;
 					foreach ( $data as $player_id => $row ):
 
 						if ( ! $player_id )
