@@ -320,7 +320,8 @@ class SP_Player_List extends SP_Secondary_Post {
 			endif;
 
 			// Add metrics to placeholders
-			$placeholders[ $player_id ] = array_merge( $metrics, sp_array_value( $placeholders, $player_id, array() ) );
+            //$xx = array('winfactor' => '5', 'lostfactor' => '1');
+			$placeholders[ $player_id ] = array_merge( $metrics, sp_array_value( $placeholders, $player_id, array() ));//, $xx 
 		endforeach;
 
 		$args = array(
@@ -383,10 +384,19 @@ class SP_Player_List extends SP_Secondary_Post {
 
 		// Event loop
 		foreach ( $events as $i => $event ):
-			$results = (array)get_post_meta( $event->ID, 'sp_results', true );
+			$specs = (array)get_post_meta( $event->ID, 'sp_specs', true );           
+            //print_r(serialize($specs));
+            //$xx = sp_array_value($specs,'winfactor', array('a'=>'b'));
+            $xx = array('winfactor' => sp_array_value($specs,'winfactor', array('a'=>'b')), 'lostfactor' => sp_array_value($specs,'lostfactor', array('a'=>'b')));
+            //print_r(serialize($xx));
+            //die();
+            $results = (array)get_post_meta( $event->ID, 'sp_results', true );
 			$team_performance = get_post_meta( $event->ID, 'sp_players', true );
 			$timeline = (array)get_post_meta( $event->ID, 'sp_timeline', true );
 			$minutes = get_post_meta( $event->ID, 'sp_minutes', true );
+            
+            $totals[ $player_id ] = array_merge($totals[ $player_id ], $xx);
+            //$totals[ $player_id ] = array_merge($totals[ $player_id ], array('winfactor' => '7', 'lostfactor' => '3'));
 			if ( $minutes === '' ) $minutes = get_option( 'sportspress_event_minutes', 90 );
 
 			// Add all team performance
@@ -566,8 +576,9 @@ class SP_Player_List extends SP_Secondary_Post {
 			if ( ! $player_id )
 				continue;
 
+			//$placeholders[ $player_id ] = array_merge( sp_array_value( $totals, $player_id, array() ), array_filter( sp_array_value( $placeholders, $player_id, array() ) ), array('winfactor' => '5', 'lostfactor' => '3') );
 			$placeholders[ $player_id ] = array_merge( sp_array_value( $totals, $player_id, array() ), array_filter( sp_array_value( $placeholders, $player_id, array() ) ) );
-
+            
 			// Player adjustments
 			$player_adjustments = sp_array_value( $adjustments, $player_id, array() );
 
@@ -579,7 +590,10 @@ class SP_Player_List extends SP_Secondary_Post {
 					endif;
 				else:
 					// Solve
-					$placeholder = sp_solve( $stat->equation, $placeholders[ $player_id ], $stat->precision );
+                    $placeholder = sp_solve( $stat->equation, $placeholders[ $player_id ], $stat->precision );
+					//$placeholder = sp_solve( $stat->equation, array_merge($placeholders[ $player_id ], array('winfactor' => '5', 'lostfactor' => '2')), $stat->precision );
+                    //$placeholder = sp_solve( '$winfactor', array_merge($placeholders[ $player_id ], array('winfactor' => '15')), $stat->precision );
+					//$placeholder = sp_solve( 765, $placeholders[ $player_id ], $stat->precision );
 
 					// Adjustment
 					$adjustment = sp_array_value( $player_adjustments, $stat->post_name, 0 );

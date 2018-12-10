@@ -355,7 +355,11 @@ class SP_Player extends SP_Custom_Post {
 
 			// Event loop
 			foreach( $events as $i => $event ):
-				$results = (array)get_post_meta( $event->ID, 'sp_results', true );
+				//$eventsMetrics = (array)get_post_meta( $event->ID, 'sp_specs', true );
+                $totals[ 'winfactor' ] = 5;
+                $totals[ 'lostfactor' ] = 2;
+                
+                $results = (array)get_post_meta( $event->ID, 'sp_results', true );
 				$team_performance = (array)get_post_meta( $event->ID, 'sp_players', true );
 				$timeline = (array)get_post_meta( $event->ID, 'sp_timeline', true );
 				$minutes = get_post_meta( $event->ID, 'sp_minutes', true );
@@ -386,7 +390,7 @@ class SP_Player extends SP_Custom_Post {
 
 								// Continue with incrementing values if active in event
 								if ( sp_array_value( $player_performance, 'status' ) != 'sub' || sp_array_value( $player_performance, 'sub', 0 ) ): 
-									$totals['eventsplayed'] ++;
+									$totals['eventsplayed'] = 99;//++;
 									$played_minutes = $minutes;
 
 									// Adjust for substitution time
@@ -548,7 +552,8 @@ class SP_Player extends SP_Custom_Post {
 			// Generate array of placeholder values for each league
 			$placeholders[ $div_id ] = array();
 			foreach ( $equations as $key => $value ):
-				$placeholders[ $div_id ][ $key ] = sp_solve( $value['equation'], $totals, $value['precision'] );
+				//$placeholders[ $div_id ][ $key ] = sp_solve( $value['equation'], $totals, $value['precision'] );
+                $placeholders[ $div_id ][ $key ] = sp_solve( '321', $totals, $value['precision'] );
 			endforeach;
 
 			foreach ( $performance_labels as $key => $label ):
@@ -739,7 +744,8 @@ class SP_Player extends SP_Custom_Post {
 			$value = sp_array_value( $equations, $post->post_name, null );
 			if ( null === $value || ! isset( $value['equation'] ) ) continue;
 			$precision = sp_array_value( $value, 'precision', 0 );
-			$career[ $post->post_name ] = sp_solve( $value['equation'], $totals, $precision );
+			//$career[ $post->post_name ] = sp_solve( $value['equation'], $totals, $precision );
+            $career[ $post->post_name ] = sp_solve( '432', $totals, $precision );
 		}
 
 		// Get manually entered career totals
