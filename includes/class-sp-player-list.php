@@ -320,8 +320,7 @@ class SP_Player_List extends SP_Secondary_Post {
 			endif;
 
 			// Add metrics to placeholders
-            //$xx = array('winfactor' => '5', 'lostfactor' => '1');
-			$placeholders[ $player_id ] = array_merge( $metrics, sp_array_value( $placeholders, $player_id, array() ));//, $xx 
+			$placeholders[ $player_id ] = array_merge( $metrics, sp_array_value( $placeholders, $player_id, array() ));
 		endforeach;
 
 		$args = array(
@@ -574,7 +573,6 @@ class SP_Player_List extends SP_Secondary_Post {
 			if ( ! $player_id )
 				continue;
 
-			//$placeholders[ $player_id ] = array_merge( sp_array_value( $totals, $player_id, array() ), array_filter( sp_array_value( $placeholders, $player_id, array() ) ), array('winfactor' => '5', 'lostfactor' => '3') );
 			$placeholders[ $player_id ] = array_merge( sp_array_value( $totals, $player_id, array() ), array_filter( sp_array_value( $placeholders, $player_id, array() ) ) );
             
 			// Player adjustments
@@ -589,9 +587,6 @@ class SP_Player_List extends SP_Secondary_Post {
 				else:
 					// Solve
                     $placeholder = sp_solve( $stat->equation, $placeholders[ $player_id ], $stat->precision );
-					//$placeholder = sp_solve( $stat->equation, array_merge($placeholders[ $player_id ], array('winfactor' => '5', 'lostfactor' => '2')), $stat->precision );
-                    //$placeholder = sp_solve( '$winfactor', array_merge($placeholders[ $player_id ], array('winfactor' => '15')), $stat->precision );
-					//$placeholder = sp_solve( 765, $placeholders[ $player_id ], $stat->precision );
 
 					// Adjustment
 					$adjustment = sp_array_value( $player_adjustments, $stat->post_name, 0 );
