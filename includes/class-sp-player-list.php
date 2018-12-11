@@ -385,18 +385,16 @@ class SP_Player_List extends SP_Secondary_Post {
 		// Event loop
 		foreach ( $events as $i => $event ):
 			$specs = (array)get_post_meta( $event->ID, 'sp_specs', true );           
-            //print_r(serialize($specs));
-            //$xx = sp_array_value($specs,'winfactor', array('a'=>'b'));
-            $xx = array('winfactor' => sp_array_value($specs,'winfactor', array('a'=>'b')), 'lostfactor' => sp_array_value($specs,'lostfactor', array('a'=>'b')));
-            //print_r(serialize($xx));
-            //die();
+            $eventFactors = array(
+                    'winfactor' => sp_array_value($specs,'winfactor', array()), 
+                    'lostfactor' => sp_array_value($specs,'lostfactor', array())
+                    );
             $results = (array)get_post_meta( $event->ID, 'sp_results', true );
 			$team_performance = get_post_meta( $event->ID, 'sp_players', true );
 			$timeline = (array)get_post_meta( $event->ID, 'sp_timeline', true );
 			$minutes = get_post_meta( $event->ID, 'sp_minutes', true );
             
-            $totals[ $player_id ] = array_merge($totals[ $player_id ], $xx);
-            //$totals[ $player_id ] = array_merge($totals[ $player_id ], array('winfactor' => '7', 'lostfactor' => '3'));
+            $totals[ $player_id ] = array_merge($totals[ $player_id ], $eventFactors);
 			if ( $minutes === '' ) $minutes = get_option( 'sportspress_event_minutes', 90 );
 
 			// Add all team performance
