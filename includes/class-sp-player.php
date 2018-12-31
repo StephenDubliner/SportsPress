@@ -356,8 +356,8 @@ class SP_Player extends SP_Custom_Post {
 			// Event loop
 			foreach( $events as $i => $event ):
 				//$eventsMetrics = (array)get_post_meta( $event->ID, 'sp_specs', true );
-                $totals[ 'winfactor' ] = 5;
-                $totals[ 'lostfactor' ] = 2;
+                //$totals[ 'winfactor' ] = 5;
+                //$totals[ 'lostfactor' ] = 2;
                 
                 $results = (array)get_post_meta( $event->ID, 'sp_results', true );
 				$team_performance = (array)get_post_meta( $event->ID, 'sp_players', true );

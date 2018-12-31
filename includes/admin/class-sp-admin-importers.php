@@ -30,6 +30,11 @@ class SP_Admin_Importers {
 	public function register_importers() {
 		global $pagenow;
 		$importers = apply_filters( 'sportspress_importers', array(
+			'sp_eventA_csv' => array(
+				'name' => __( 'SportsPress EventsA (CSV)', 'sportspress' ),
+				'description' => __( 'Import <strong>eventsA</strong> from a csv file.', 'sportspress'),
+				'callback' => array( $this, 'events_importerA' ),
+			),
 			'sp_event_csv' => array(
 				'name' => __( 'SportsPress Events (CSV)', 'sportspress' ),
 				'description' => __( 'Import <strong>events</strong> from a csv file.', 'sportspress'),
@@ -80,6 +85,19 @@ class SP_Admin_Importers {
 
 	    // Dispatch
 	    $importer = new SP_Event_Importer();
+	    $importer->dispatch();
+	}
+
+	/**
+	 * Add menu item
+	 */
+	public function events_importerA() {
+		$this->includes();
+		
+	    require 'importers/class-sp-eventa-importer.php';
+
+	    // Dispatch
+	    $importer = new SP_EventA_Importer();
 	    $importer->dispatch();
 	}
 
