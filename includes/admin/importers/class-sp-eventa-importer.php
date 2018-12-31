@@ -21,29 +21,17 @@ if ( class_exists( 'WP_Importer' ) ) {
 		 */
 		public function __construct() {
 			$this->import_page = 'sp_eventA_csv';
-			$this->import_label = __( 'Import EventsA', 'sportspress' );
+			$this->import_label = __( 'Import EventsAB', 'sportspress' );
 			$this->columns = array(
 				'post_date' => __( 'Date', 'sportspress' ),
 				//'post_time' => __( 'Time', 'sportspress' ),
-				//'sp_venue' => __( 'Venue', 'sportspress' ),
+				'sp_venue' => __( 'Venue', 'sportspress' ),
 				//'sp_team' => __( 'Teams', 'sportspress' ),
-				'sp_T1P1' => __( 'T1P1', 'sportspress' ),
-				'sp_T1P2' => __( 'T1P2', 'sportspress' ),
-				'sp_T2P1' => __( 'T2P1', 'sportspress' ),
-				'sp_T2P2' => __( 'T2P2', 'sportspress' ),
-				'sp_G1PF' => __( 'G1PF', 'sportspress' ),
-				'sp_G2PF' => __( 'G2PF', 'sportspress' ),
-				'sp_G3PF' => __( 'G3PF', 'sportspress' ),
-				'sp_G1PA' => __( 'G1PA', 'sportspress' ),
-				'sp_G2PA' => __( 'G2PA', 'sportspress' ),
-				'sp_G3PA' => __( 'G3PA', 'sportspress' ),
-				'sp_GF' => __( 'GF', 'sportspress' ),
-				'sp_GA' => __( 'GA', 'sportspress' ),
-				'sp_GRADE' => __( 'GRADE', 'sportspress' ),
-				'sp_SECTION' => __( 'SECTION', 'sportspress' ),
-				//'sp_results' => __( 'Results', 'sportspress' ),
-				//'sp_outcome' => __( 'Outcome', 'sportspress' ),
-				//'sp_player' => __( 'Players', 'sportspress' ),
+				'sp_grade' => __( 'Grade', 'sportspress' ),
+				'sp_section' => __( 'Section', 'sportspress' ),
+				'sp_player' => __( 'Players', 'sportspress' ),
+				'sp_outcome' => __( 'Outcome', 'sportspress' ),
+				'sp_results' => __( 'Results', 'sportspress' ),
 			);
 			//$performance_labels = sp_get_var_labels( 'sp_performance' );
 			//if ( $performance_labels && is_array( $performance_labels ) && sizeof( $performance_labels ) )
@@ -80,9 +68,9 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 			foreach ( $rows as $row ):
 
-				$row = array_filter( $row );
+				$row_check = array_filter( $row );
 
-				if ( empty( $row ) ) continue;
+				if ( empty( $row_check ) ) continue;
 
 				$meta = array();
 
@@ -91,21 +79,21 @@ if ( class_exists( 'WP_Importer' ) ) {
 				endforeach;
 
 				// Slice array into event, team, and player
-				//$event = array_slice( $row, 0, 3 );
+				$event = array_slice( $row, 0, 2 );
 				//$team = array_slice( $row, 3, 3 );
-				$team = 'ABC';//todo:auto generate
 				//$player = array_slice( $row, 6 );
-				$player = array_slice( $row, 2, 4 );
+				$player = array_slice( $row, 4 );
+				$team = str_replace('|',' with ', $player[0]);//todo:auto generate
 
 				// Get event details
-				// $event = array(
-				// 	sp_array_value( $meta, 'post_date' ),
-				// 	sp_array_value( $meta, 'post_time' ),
-				// 	sp_array_value( $meta, 'sp_venue' ),
-				// );
-				// unset( $meta['post_date'] );
-				// unset( $meta['post_time'] );
-				// unset( $meta['sp_venue'] );
+				$event = array(
+					sp_array_value( $meta, 'post_date' ),
+					//sp_array_value( $meta, 'post_time' ),
+					sp_array_value( $meta, 'sp_venue' ),
+				);
+				unset( $meta['post_date'] );
+				//unset( $meta['post_time'] );
+				unset( $meta['sp_venue'] );
 
 				// Get team results
 				// $team = array(
@@ -138,6 +126,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 					//list( $date, $time, $venue ) = $event;
 					$date = $row[0];
 					$venue = $row[1];
+					$grade = $row[2];
+					$section = $row[3];
 
 					// Format date
 					$date = str_replace( '/', '-', trim( $date ) );
@@ -206,7 +196,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 					// List team columns
 					//list( $team_name, $result, $outcome ) = $team;
 					$team_name = $team;
-					$outcome = '';//todo:decide how to hndle-auto or manual
+					$outcome = $row[5];//todo:decide how to hndle-auto or manual
 
 					// Find out if team exists
 					$team_object = get_page_by_title( stripslashes( $team_name ), OBJECT, 'sp_team' );
@@ -252,8 +242,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 						add_post_meta( $id, 'sp_player', 0 );
 
 						// Explode results into array
-						//$results = explode( '|', $result );
-						$results = array_slice( $row, 6, 10 );
+						$results = explode( '|', $row[6] );
+						//$results = array_slice( $row, 6, 10 );
 						// Create team results array from result keys
 						$team_results = array();
 						if ( sizeof( $result_labels ) > 0 ):
@@ -352,14 +342,14 @@ if ( class_exists( 'WP_Importer' ) ) {
 				if ( sizeof( $player ) > 0 && ! empty( $player[0] ) ):
 
 					// Get and unset player name leaving us with the performance
-					$player_name = $player[0];
+					list($player1_name,$player2_name) = explode( '|', $player[0] ); 
 					unset( $player[0] );
 
 					// Find out if player exists
-					$player_object = get_page_by_title( stripslashes( $player_name ), OBJECT, 'sp_player' );
+					$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
 
 					// Get or insert player
-					if ( $player_object ):
+					if ( $player1_object ):
 
 						// Make sure player is published
 						//if ( $player_object->post_status != 'publish' ):
@@ -367,42 +357,76 @@ if ( class_exists( 'WP_Importer' ) ) {
 						//endif;
 
 						// Get player ID
-						$player_id = $player_object->ID;
+						$player1_id = $player1_object->ID;
 
 						// Get player number
-						$player_number = get_post_meta( $player_id, 'sp_number', true );
+						$player1_number = get_post_meta( $player1_id, 'sp_number', true );
 
 					else:
 
 						// Insert player
-						$player_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player_name ) ) );
+						$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player1_name ) ) );
 
 						// Flag as import
-						update_post_meta( $player_id, '_sp_import', 1 );
+						update_post_meta( $player1_id, '_sp_import', 1 );
 
 						// Update number
-						update_post_meta( $player_id, 'sp_number', null );
+						update_post_meta( $player1_id, 'sp_number', null );
 
 						// Get player number
-						$player_number = null;
+						$player1_number = null;
 
 					endif;
 
+					// Find out if player exists
+					$player2_object = get_page_by_title( stripslashes( $player2_name ), OBJECT, 'sp_player' );
+					// Get or insert player
+					if ( $player2_object ):
+
+						// Make sure player is published
+						//if ( $player_object->post_status != 'publish' ):
+						//	wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
+						//endif;
+
+						// Get player ID
+						$player2_id = $player2_object->ID;
+
+						// Get player number
+						$player2_number = get_post_meta( $player2_id, 'sp_number', true );
+
+					else:
+
+						// Insert player
+						$player2_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player2_name ) ) );
+
+						// Flag as import
+						update_post_meta( $player2_id, '_sp_import', 1 );
+
+						// Update number
+						update_post_meta( $player2_id, 'sp_number', null );
+
+						// Get player number
+						$player2_number = null;
+
+					endif;
 					// Update league
 					if ( $league ):
-						wp_set_object_terms( $player_id, $league, 'sp_league', true );
+						wp_set_object_terms( $player1_id, $league, 'sp_league', true );
+						wp_set_object_terms( $player2_id, $league, 'sp_league', true );
 					endif;
 
 					// Update season
 					if ( $season ):
-						wp_set_object_terms( $player_id, $season, 'sp_season', true );
+						wp_set_object_terms( $player1_id, $season, 'sp_season', true );
+						wp_set_object_terms( $player2_id, $season, 'sp_season', true );
 					endif;
 
 					// Add to event if exists
 					if ( isset( $id ) ):
 
 						// Add player to event
-						add_post_meta( $id, 'sp_player', $player_id );
+						add_post_meta( $id, 'sp_player', $player1_id );
+						add_post_meta( $id, 'sp_player', $player2_id );
 
 						// Add player performance to array if team is available
 						if ( isset( $team_id ) ):
@@ -417,20 +441,23 @@ if ( class_exists( 'WP_Importer' ) ) {
 							//$players[ $team_id ][ $player_id ] = $performance;
 
 							// Get player teams
-							$player_teams = get_post_meta( $player_id, 'sp_team', false );
-							$current_team = get_post_meta( $player_id, 'sp_current_team', true );
-							$past_teams = get_post_meta( $player_id, 'sp_past_team', false );
+							$player_teams = get_post_meta( $player1_id, 'sp_team', false );
+							$current_team = get_post_meta( $player1_id, 'sp_current_team', true );
+							$past_teams = get_post_meta( $player1_id, 'sp_past_team', false );
 
 							// Add team if not exists in player
 							if ( ! in_array( $team_id, $player_teams ) ):
-								add_post_meta( $player_id, 'sp_team', $team_id );
+								add_post_meta( $player1_id, 'sp_team', $team_id );
+								add_post_meta( $player2_id, 'sp_team', $team_id );
 							endif;
 
 							// Add as past team or set current team if not set
 							if ( ! $current_team ):
-								update_post_meta( $player_id, 'sp_current_team', $team_id );
+								update_post_meta( $player1_id, 'sp_current_team', $team_id );
+								update_post_meta( $player2_id, 'sp_current_team', $team_id );
 							elseif ( $current_team != $team_id && ! in_array( $team_id, $past_teams ) ):
-								add_post_meta( $player_id, 'sp_past_team', $team_id );
+								add_post_meta( $player1_id, 'sp_past_team', $team_id );
+								add_post_meta( $player2_id, 'sp_past_team', $team_id );
 							endif;
 
 						endif;
@@ -474,7 +501,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 			echo '<p>' . __( 'Hi there! Choose a .csv file to upload, then click "Upload file and import".', 'sportspress' ).'</p>';
 			echo '<p>' . sprintf( __( 'Events need to be defined with columns in a specific order (3+ columns). <a href="%s">Click here to download a sample</a>.', 'sportspress' ), plugin_dir_url( SP_PLUGIN_FILE ) . 'dummy-data/events-sample.csv' ) . '</p>';
 			echo '<p>' . sprintf( __( 'Supports CSV files generated by <a href="%s">LeagueLobster</a>.', 'sportspress' ), 'http://tboy.co/leaguelobster' ) . '</p>';
-			wp_import_upload_form( 'admin.php?import=sp_event_csv&step=1' );
+			wp_import_upload_form( 'admin.php?import=sp_eventA_csv&step=1' );
 			echo '</div>';
 		}
 
