@@ -32,6 +32,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 				'sp_player' => __( 'Players', 'sportspress' ),
 				'sp_outcome' => __( 'Outcome', 'sportspress' ),
 				'sp_results' => __( 'Results', 'sportspress' ),
+				'sp_games' => __( 'Games', 'sportspress' ),
 			);
 			//$performance_labels = sp_get_var_labels( 'sp_performance' );
 			//if ( $performance_labels && is_array( $performance_labels ) && sizeof( $performance_labels ) )
@@ -48,7 +49,6 @@ if ( class_exists( 'WP_Importer' ) ) {
 		 */
 		function import( $array = array(), $columns = array( 'post_title' ) ) {
 			$this->imported = $this->skipped = 0;
-
 			if ( ! is_array( $array ) || ! sizeof( $array ) ):
 				$this->footer();
 				die();
@@ -128,7 +128,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 					$venue = $row[1];
 					$grade = $row[2];
 					$section = $row[3];
-
+					$aps=-1;
 					// Format date
 					$date = str_replace( '/', '-', trim( $date ) );
 					$date_array = explode( '-', $date );
@@ -243,15 +243,23 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 						// Explode results into array
 						$results = explode( '|', $row[6] );
+						$aps=(11-$grade)*($results[0]+$results[1]+$results[2]);
 						//$results = array_slice( $row, 6, 10 );
 						// Create team results array from result keys
 						$team_results = array();
-						if ( sizeof( $result_labels ) > 0 ):
-							foreach( $result_labels as $key => $label ):
-								$team_results[ $key ] = trim( array_shift( $results ) );
-							endforeach;
-							$team_results[ 'outcome' ] = array();
-						endif;
+						$team_results[ 'gap' ] = $results[0];
+						$team_results[ 'gbp' ] = $results[1];
+						$team_results[ 'gcp' ] = $results[2];
+						
+						$games = explode( '|', $row[7] );
+						$team_results[ 'gw' ] = $games[0];
+						$team_results[ 'gl' ] = $games[1];
+						// if ( sizeof( $result_labels ) > 0 ):
+						// 	foreach( $result_labels as $key => $label ):
+						// 		$team_results[ $key ] = trim( array_shift( $results ) );
+						// 	endforeach;
+						// 	$team_results[ 'outcome' ] = array();
+						// endif;
 
 						// Explode outcomes into array
 						$outcomes = explode( '|', $outcome );
@@ -294,10 +302,17 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 							endif;
 
+							$aps=(11-$grade)*($team_results['gap']+$team_results['gbp']+$team_results['gcp']);
+							if($outcome<>'Win'):
+								$aps=$aps*.84;
+							endif;
+
 							// Add to team results array
 							$team_results[ 'outcome' ][] = $outcome_slug;
 
 						endforeach;
+
+
 
 						// Get existing results
 						$event_results = get_post_meta( $id, 'sp_results', true );
@@ -312,6 +327,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 						// Update event results
 						update_post_meta( $id, 'sp_results', $event_results );
+						//
+						update_post_meta( $id, 'sp_specs', array('grade'=>$grade, 'section'=>$section));//winfactor lostfactor
 
 						// Get event name
 						$title = get_the_title( $id );
@@ -342,7 +359,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 				if ( sizeof( $player ) > 0 && ! empty( $player[0] ) ):
 
 					// Get and unset player name leaving us with the performance
-					list($player1_name,$player2_name) = explode( '|', $player[0] ); 
+					list($player1_name, $player2_name) = explode( '|', $player[0] ); 
 					unset( $player[0] );
 
 					// Find out if player exists
@@ -439,6 +456,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 								//$performance[ $key ] = array_shift( $player );
 							//endforeach;
 							//$players[ $team_id ][ $player_id ] = $performance;
+							$players[ $team_id ][ $player1_id ] = array('ap'=> $aps);
+							$players[ $team_id ][ $player2_id ] = array('ap'=> $aps);
 
 							// Get player teams
 							$player_teams = get_post_meta( $player1_id, 'sp_team', false );
