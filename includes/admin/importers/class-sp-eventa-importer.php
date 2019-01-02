@@ -2,10 +2,25 @@
 /**
  * Event importer - import events into SportsPress.
  *
- * @author 		ThemeBoy
+ * @author 		StephenDubliner
  * @category 	Admin
  * @package 	SportsPress/Admin/Importers
- * @version		2.5
+ * @version		2.5.1
+essentials:
+0. import players from BI db
+1. player name smart matching
+- import wrapped in transaction block
+- solution for unknown player
+- support number of result templates
+21|14|21,2|1
+21|21,2|0
+21,1|0
+- support for empty oponent players
+PlayerA,
+nice to haves:
+- replace events label with match
+- charts support
+- automatic outcome, games
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
