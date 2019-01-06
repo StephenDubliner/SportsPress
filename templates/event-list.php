@@ -25,8 +25,13 @@ $defaults = array(
 	'season' => null,
 	'venue' => null,
 	'team' => null,
+
 	'teams_past' => null,
 	'date_before' => null,
+
+	'competitions' => null,
+	'filter' => 'both',
+
 	'player' => null,
 	'number' => -1,
 	'show_team_logo' => get_option( 'sportspress_event_list_show_logos', 'no' ) == 'yes' ? true : false,
@@ -47,7 +52,6 @@ $defaults = array(
 );
 
 extract( $defaults, EXTR_SKIP );
-
 $calendar = new SP_Calendar( $id );
 if ( $status != 'default' )
 	$calendar->status = $status;
@@ -73,10 +77,17 @@ if ( $venue )
 	$calendar->venue = $venue;
 if ( $team )
 	$calendar->team = $team;
+
 if ( $teams_past )
 	$calendar->teams_past = $teams_past;
 if ( $date_before )
 	$calendar->date_before = $date_before;
+
+if ( $competitions )
+	$calendar->competitions = $competitions;
+if ( $filter )
+	$calendar->filter = $filter;
+
 if ( $player )
 	$calendar->player = $player;
 if ( $order != 'default' )

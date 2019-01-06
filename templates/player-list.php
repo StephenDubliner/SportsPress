@@ -16,6 +16,8 @@ $defaults = array(
 	'grouptag' => 'h4',
 	'columns' => null,
 	'grouping' => null,
+	'filter' => null,
+	'competitions' => null,
 	'orderby' => 'default',
 	'order' => 'ASC',
 	'show_all_players_link' => false,
@@ -51,6 +53,21 @@ if ( null !== $columns && ! is_array( $columns ) )
 	$columns = explode( ',', $columns );
 
 $list = new SP_Player_List( $id );
+
+//Get competitions ids
+if ( !$competitions ){
+$competitions = (array)get_post_meta( $id, 'sp_competition', false );
+}
+if ( $competitions ){
+$list->competitions = $competitions;
+}
+
+//Get filtering
+if ( !$filter ) { 
+	$filter = 'both'; 
+}
+$list->filter = $filter;
+
 if ( isset( $columns ) && null !== $columns ):
 	$list->columns = $columns;
 endif;

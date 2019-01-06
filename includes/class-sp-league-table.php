@@ -18,11 +18,17 @@ class SP_League_Table extends SP_Secondary_Post {
 	/** @var array Positions of teams in the table. */
 	public $pos;
 
-	/** @var array Inremental value for team position. */
+	/** @var array Incremental value for team position. */
 	public $counter;
 
 	/** @var array Teams to check for tiebreakers. */
 	public $tiebreakers = array();
+	
+	/** @var array The competitions IDs. */
+	public $competitions;
+	
+	/** @var string The filter (competition || leagueseason || both(default)). */
+	public $filter;
 
 	/**
 	 * Returns formatted data
@@ -34,6 +40,18 @@ class SP_League_Table extends SP_Secondary_Post {
 	public function data( $admin = false, $team_ids = null ) {
 		$league_ids = sp_get_the_term_ids( $this->ID, 'sp_league' );
 		$season_ids = sp_get_the_term_ids( $this->ID, 'sp_season' );
+		if ( $this->competitions ):
+			$competitions = array_filter( $this->competitions );
+		else :
+			$competitions = get_post_meta( $this->ID, 'sp_competitions', false );
+		endif;
+		if ( $this->filter ):
+			$filter = $this->filter;
+		elseif ( isset( $competitions ) && !empty($competitions) ):
+			$filter = 'competition';
+		else:
+			$filter = 'both';
+		endif;
 		$table_stats = (array)get_post_meta( $this->ID, 'sp_teams', true );
 		$usecolumns = get_post_meta( $this->ID, 'sp_columns', true );
 		$adjustments = get_post_meta( $this->ID, 'sp_adjustments', true );
@@ -91,13 +109,14 @@ class SP_League_Table extends SP_Secondary_Post {
 					'numberposts' => -1,
 					'posts_per_page' => -1,
 					'order' => 'ASC',
+					'meta_query' => array(),
 					'tax_query' => array(
 						'relation' => 'AND',
 					),
 					'fields' => 'ids',
 				);
 
-				if ( $league_ids ):
+				if ( $league_ids && $filter != 'competition' ):
 					$args['tax_query'][] = array(
 						'taxonomy' => 'sp_league',
 						'field' => 'term_id',
@@ -105,15 +124,37 @@ class SP_League_Table extends SP_Secondary_Post {
 					);
 				endif;
 
-				if ( $season_ids ):
+				if ( $season_ids && $filter != 'competition' ):
 					$args['tax_query'][] = array(
 						'taxonomy' => 'sp_season',
 						'field' => 'term_id',
 						'terms' => $season_ids
 					);
 				endif;
-
+				
+				if ( isset( $competitions ) && $filter == 'competition' ) :
+				unset($args['tax_query']);
+				$args['meta_query'][] = array(
+					'key' => 'sp_competition',
+					'value' => $competitions,
+					'compare' => 'IN',
+				);
+			endif;
+				
 				$team_ids = get_posts( $args );
+				
+				if ( isset( $competitions ) && $filter == 'both' ) :
+				unset($args['tax_query']);
+				$args['meta_query'][] = array(
+					'key' => 'sp_competition',
+					'value' => $competitions,
+					'compare' => 'IN',
+				);
+				
+				$team_ids_comps = get_posts( $args );
+				$team_ids = array_merge( $team_ids_comps, $team_ids );
+			endif;
+				
 			} else {
 				$team_ids = (array)get_post_meta( $this->ID, 'sp_team', false );
 			}

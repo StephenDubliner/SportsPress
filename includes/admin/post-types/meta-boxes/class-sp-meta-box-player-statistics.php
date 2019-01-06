@@ -20,16 +20,39 @@ class SP_Meta_Box_Player_Statistics {
 	 */
 	public static function output( $post ) {
 		$player = new SP_Player( $post );
-		$leagues = $player->get_terms_sorted_by_sp_order( 'sp_league' );
-		if ( is_array ( $leagues ) ) {
-			$league_num = sizeof( $leagues );
-		}else{
-			$league_num =0;
+
+		//Check if there are Competitions assigned to players
+		$competitions = array_filter( get_post_meta( $post->ID, 'sp_competition', false ) );
+		$leagues = array();
+		if ( $competitions) {
+			foreach ( $competitions as $competition ) {
+				$leagues_array = (get_the_terms( $competition, 'sp_league' ));
+				if ( $leagues_array ) {
+					foreach ( $leagues_array as $league_ar ) {
+						if ( !isset( $unique_league[$league_ar->term_id] ) ) {
+							$unique_league[$league_ar->term_id] = $league_ar->name ;
+							$leagues[] = $league_ar;
+						}
+					}
+				}
+			}
 		}
+		$leagues_array = get_the_terms( $post->ID, 'sp_league' );
+		if ( $leagues_array ) {
+			foreach ( $leagues_array as $league_ar ) {
+				if ( !isset( $unique_league[$league_ar->term_id] ) ) {
+					$unique_league[$league_ar->term_id] = $league_ar->name ;
+					$leagues[] = $league_ar;
+				}
+			}
+		}
+
+		$league_num = sizeof( $leagues );
+
 		$sections = get_option( 'sportspress_player_performance_sections', -1 );
 		$show_career_totals = 'yes' === get_option( 'sportspress_player_show_career_total', 'no' ) ? true : false;
 
-		if ( $leagues ) {
+		if ( $leagues && is_array( $leagues ) ){
 			if ( -1 == $sections ) {
 				// Loop through statistics for each league
 				$i = 0;
@@ -95,7 +118,9 @@ class SP_Meta_Box_Player_Statistics {
 	public static function table( $id = null, $league_id, $columns = array(), $data = array(), $placeholders = array(), $merged = array(), $leagues = array(), $has_checkboxes = false, $team_select = false, $formats = array(), $total_types = array() ) {
 		$readonly = false;
 		$teams = array_filter( get_post_meta( $id, 'sp_team', false ) );
+
 		$buffer = apply_filters( 'sportspress_meta_box_player_statistics_table_buffer', array( 'teams' => $teams, 'readonly' => $readonly ), $id );
+
 		?>
 		<div class="sp-data-table-container">
 			<table class="widefat sp-data-table sp-player-statistics-table">
@@ -201,9 +226,44 @@ class SP_Meta_Box_Player_Statistics {
 												),
 											),
 										);
-										if ( ! sp_dropdown_pages( $args ) ):
-											_e( '&mdash; None &mdash;', 'sportspress' );
-										endif;
+										
+										if ( ! sp_dropdown_pages( $args ) ){
+											$com_args = array(
+													'post_type' => 'sp_competition',
+													'tax_query' => array(
+														'relation' => 'AND',
+														array(
+															'taxonomy' => 'sp_league',
+															'terms' => $league_id,
+															'field' => 'term_id',
+														),
+														array(
+															'taxonomy' => 'sp_season',
+															'terms' => $div_id,
+															'field' => 'term_id',
+														),
+													),
+											);
+											$competitions = get_posts($com_args);
+											$competition_ids = array();
+											foreach ( $competitions as $competition ) {
+												$competition_ids[] = $competition->ID;
+											}
+
+											if( $competitions ) {
+												unset($args['tax_query']);
+												$args['meta_query'][] = array(
+													'key' => 'sp_competition',
+													'value' => $competition_ids,
+													'compare' => 'IN',
+												);
+												if( !sp_dropdown_pages( $args ) ) {
+													_e( '&mdash; None &mdash;', 'sportspress' );
+												}
+											}else{
+												_e( '&mdash; None &mdash;', 'sportspress' );
+											}
+										}
 										?>
 									</td>
 								<?php endif; ?>

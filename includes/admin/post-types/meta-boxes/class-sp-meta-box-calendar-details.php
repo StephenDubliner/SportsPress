@@ -34,6 +34,17 @@ class SP_Meta_Box_Calendar_Details {
 		$table_id = get_post_meta( $post->ID, 'sp_table', true );
 		$orderby = get_post_meta( $post->ID, 'sp_orderby', true );
 		$order = get_post_meta( $post->ID, 'sp_order', true );
+		$competition = (array) get_post_meta( $post->ID, 'sp_competition', true );
+		$args_comp = array(
+						'post_type' => 'sp_competition',
+						'name' => 'sp_competition[]',
+						'class' => 'sportspress-pages',
+						'show_option_none' => __( '&mdash; None &mdash;', 'sportspress' ),
+						'values' => 'ID',
+						'selected' => sp_array_value( $competition ),
+						'chosen' => true,
+						'tax_query' => array(),
+					);
 		?>
 		<div>
 			<p><strong><?php _e( 'Heading', 'sportspress' ); ?></strong></p>
@@ -102,9 +113,20 @@ class SP_Meta_Box_Calendar_Details {
 					<input name="sp_day" type="text" class="medium-text" placeholder="<?php _e( 'All', 'sportspress' ); ?>" value="<?php echo esc_attr( $day ); ?>">
 				</p>
 			</div>
+			<div class="sp-event-competition-field">
+			<p><strong><?php _e( 'Competition', 'sportspress' ); ?></strong></p>
+			<?php if ( ! sp_dropdown_pages( $args_comp ) ) { ?>
+			&mdash; None &mdash;
 			<?php
+						//unset( $args_comp['tax_query'] );
+						//sp_dropdown_pages( $args_comp );
+					}?>
+			</div>
+			<?php
+			if ( sp_array_value( $competition ) == '-1' || sp_array_value( $competition ) == '' ){
 			foreach ( $taxonomies as $taxonomy ) {
 				sp_taxonomy_field( $taxonomy, $post, true );
+			}
 			}
 			?>
 			<p><strong><?php _e( 'Team', 'sportspress' ); ?></strong></p>
@@ -147,6 +169,7 @@ class SP_Meta_Box_Calendar_Details {
 	 * Save meta box data
 	 */
 	public static function save( $post_id, $post ) {
+		//update_post_meta( $post_id, 'sp_competition', sp_array_value( $_POST, 'sp_competition', array() ) );
 		update_post_meta( $post_id, 'sp_caption', esc_attr( sp_array_value( $_POST, 'sp_caption', 0 ) ) );
 		update_post_meta( $post_id, 'sp_status', sp_array_value( $_POST, 'sp_status', 0 ) );
 		update_post_meta( $post_id, 'sp_event_format', sp_array_value( $_POST, 'sp_event_format', 0 ) );
@@ -163,5 +186,6 @@ class SP_Meta_Box_Calendar_Details {
 		update_post_meta( $post_id, 'sp_orderby', sp_array_value( $_POST, 'sp_orderby', null ) );
 		update_post_meta( $post_id, 'sp_order', sp_array_value( $_POST, 'sp_order', null ) );
 		sp_update_post_meta_recursive( $post_id, 'sp_team', sp_array_value( $_POST, 'sp_team', array() ) );
+		sp_update_post_meta_recursive( $post_id, 'sp_competition', sp_array_value( $_POST, 'sp_competition', array() ) );
 	}
 }

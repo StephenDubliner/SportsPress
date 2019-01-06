@@ -20,6 +20,13 @@ class SP_Meta_Box_Calendar_Data {
 	 */
 	public static function output( $post ) {
 		$calendar = new SP_Calendar( $post );
+		
+		//Check if there are Competitions assigned to Calendar
+		$competitions = array_filter( get_post_meta( $post->ID, 'sp_competition', false ) );
+		if ( $competitions ){
+		$calendar->competitions = $competitions;
+		}
+
 		$data = $calendar->data();
 		$usecolumns = $calendar->columns;
 		self::table( $data, $usecolumns );

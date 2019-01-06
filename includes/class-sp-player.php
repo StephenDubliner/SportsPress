@@ -41,6 +41,16 @@ class SP_Player extends SP_Custom_Post {
 	public function seasons() {
 		return $this->get_terms_sorted_by_sp_order( 'sp_season' );
 	}
+	
+	/**
+	 * Returns competitions
+	 *
+	 * @access public
+	 * @return array
+	 */
+	public function competitions() {
+		return get_post_meta( $this->ID, 'sp_competition', false );
+	}
 
 	/**
 	 * Returns current teams
@@ -110,7 +120,35 @@ class SP_Player extends SP_Custom_Post {
 	 * @return array
 	 */
 	public function data( $league_id, $admin = false, $section = -1 ) {
-		$seasons = (array) $this->get_terms_sorted_by_sp_order( 'sp_season' );
+
+		//$seasons = (array) $this->get_terms_sorted_by_sp_order( 'sp_season' );
+
+
+		//Check if there are Competitions assigned to players
+		$competitions = array_filter( get_post_meta( $this->ID, 'sp_competition', false ) );
+		if ( $competitions) {
+			foreach ( $competitions as $competition ) {
+				$seasons_array = (get_the_terms( $competition, 'sp_season' ));
+				if ( $seasons_array ) {
+					foreach ( $seasons_array as $season_ar ) {
+						if ( !isset( $unique_season[$season_ar->term_id] ) ) {
+							$unique_season[$season_ar->term_id] = $season_ar->name ;
+							$seasons[] = $season_ar;
+						}
+					}
+				}
+			}
+		}
+		$seasons_array = array_filter(array(get_the_terms( $this->ID, 'sp_season' )));
+		if ( $seasons_array ) {
+			foreach ( $seasons_array as $season_ar ) {
+				if ( !isset( $unique_season[$season_ar->term_id] ) ) {
+					$unique_season[$season_ar->term_id] = $season_ar->name ;
+					$seasons[] = $season_ar;
+				}
+			}
+		}
+
 		$metrics = (array)get_post_meta( $this->ID, 'sp_metrics', true );
 		$stats = (array)get_post_meta( $this->ID, 'sp_statistics', true );
 		$leagues = (array) sp_array_value( (array)get_post_meta( $this->ID, 'sp_leagues', true ), $league_id );
@@ -348,6 +386,34 @@ class SP_Player extends SP_Custom_Post {
 					'terms' => $div_id
 				);
 			endif;
+			
+			//Check if there is a Competition
+			$com_args = array(
+				'post_type' => 'sp_competition',
+				'tax_query' => array(
+							'relation' => 'AND',
+								array(
+									'taxonomy' => 'sp_league',
+									'terms' => $league_id,
+									'field' => 'term_id',
+								),
+								array(
+									'taxonomy' => 'sp_season',
+									'terms' => $div_id,
+									'field' => 'term_id',
+								),
+								),
+							);
+			$competitions = get_posts($com_args);
+
+			if( $competitions ) {
+				unset($args['tax_query']);
+				$args['meta_query'][] = array(
+											'key' => 'sp_competition',
+											'value' => $competitions[0]->ID,
+											'compare' => '=',
+										);
+			}
 
 			$args = apply_filters( 'sportspress_player_data_event_args', $args, $data, $div_id );
 

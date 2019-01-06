@@ -17,6 +17,8 @@ $defaults = array(
 	'league' => null,
 	'season' => null,
 	'team' => null,
+	'competitions' => null,
+	'filter' => null,
 	'player' => null,
 	'number' => -1,
 	'link_teams' => get_option( 'sportspress_link_teams', 'no' ) == 'yes' ? true : false,
@@ -43,6 +45,10 @@ if ( $season )
 	$calendar->season = $season;
 if ( $team )
 	$calendar->team = $team;
+if ( $competitions )
+	$calendar->competitions = $competitions;
+if ( $filter )
+	$calendar->filter = $filter;
 if ( $player )
 	$calendar->player = $player;
 
@@ -56,6 +62,8 @@ $args = array(
 	'league' => $league,
 	'season' => $season,
 	'team' => $team,
+	'competitions' => $competitions,
+	'filter' => $filter,
 	'player' => $player,
 	'number' => $number,
 	'link_teams' => $link_teams,

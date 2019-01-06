@@ -40,10 +40,12 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 		// Quick edit
 		add_action( 'quick_edit_custom_box', array( $this, 'quick_edit_number' ), 10, 2 );
 		add_action( 'quick_edit_custom_box', array( $this, 'quick_edit_teams' ), 10, 2 );
+		add_action( 'quick_edit_custom_box', array( $this, 'quick_edit_competitions' ), 10, 2 );
 		add_action( 'save_post', array( $this, 'quick_save' ) );
 		
 		// Bulk edit
 		add_action( 'bulk_edit_custom_box', array( $this, 'bulk_edit_teams' ), 10, 2 );
+		add_action( 'bulk_edit_custom_box', array( $this, 'bulk_edit_competitions' ), 10, 2 );
 		add_action( 'wp_ajax_save_bulk_edit_sp_player', array( $this, 'bulk_save' ) );
 		
 		// Call SP_Admin_CPT constructor
@@ -74,6 +76,7 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 			'title' => null,
 			'sp_position' => __( 'Positions', 'sportspress' ),
 			'sp_team' => __( 'Teams', 'sportspress' ),
+			'sp_competition' => __( 'Competitions', 'sportspress' ),
 			'sp_league' => __( 'Leagues', 'sportspress' ),
 			'sp_season' => __( 'Seasons', 'sportspress' ),
 		), $existing_columns, array(
@@ -88,6 +91,19 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 	 */
 	public function custom_columns( $column, $post_id ) {
 		switch ( $column ):
+			case 'sp_competition':
+				$competitions = get_post_meta( $post_id, 'sp_competition', false );
+				$competitions = array_filter( $competitions );
+				echo '<span class="hidden sp-player-competitions" data-competitions="' . implode( ',', $competitions ) . '"></span>';
+				if ( empty( $competitions ) ):
+					echo '&mdash;';
+				else:
+					foreach( $competitions as $competition_id ):
+						echo get_the_title($competition_id);
+						echo '<br/>';
+					endforeach;
+				endif;
+				break;
 			case 'sp_number':
 				echo get_post_meta ( $post_id, 'sp_number', true );
 				break;
@@ -160,6 +176,16 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 			'values' => 'ID',
 		);
 		wp_dropdown_pages( $args );
+		
+		$selected = isset( $_REQUEST['competition'] ) ? $_REQUEST['competition'] : null;
+		$args = array(
+			'post_type' => 'sp_competition',
+			'name' => 'competition',
+			'show_option_none' => __( 'Show all competitions', 'sportspress' ),
+			'selected' => $selected,
+			'values' => 'ID',
+		);
+		wp_dropdown_pages( $args );
 
 	    if ( taxonomy_exists( 'sp_league' ) ):
 			$selected = isset( $_REQUEST['sp_league'] ) ? $_REQUEST['sp_league'] : null;
@@ -197,11 +223,16 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 
 		if ( $typenow == 'sp_player' ) {
 
-			if ( ! empty( $_GET['team'] ) ) {
-				$query->query_vars['meta_value'] 	= $_GET['team'];
-				$query->query_vars['meta_key'] 		= 'sp_team';
-			}
-		}
+    	if ( ! empty( $_GET['team'] ) ) {
+	    	$query->query_vars['meta_value'] 	= $_GET['team'];
+	        $query->query_vars['meta_key'] 		= 'sp_team';
+	    }
+		
+		if ( ! empty( $_GET['competition'] ) ) {
+		    	$query->query_vars['meta_value'] 	= $_GET['competition'];
+		        $query->query_vars['meta_key'] 		= 'sp_competition';
+		    }
+	}
 
 		return $query;
 	}
@@ -271,6 +302,38 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 		</fieldset>
 		<?php
 	}
+	
+	/**
+	 * Quick edit competitions
+	 *
+	 * @param string $column_name
+	 * @param string $post_type
+	 */
+	public function quick_edit_competitions( $column_name, $post_type ) {
+		if ( $this->type !== $post_type ) return;
+		if ( 'sp_competition' !== $column_name ) return;
+
+		$competitions = get_posts( array(
+			'post_type' => 'sp_competition',
+			'numberposts' => -1,
+			'post_status' => 'publish',
+		) );
+		
+		if ( ! $competitions ) return;
+		?>
+		<fieldset class="inline-edit-col-right">
+			<div class="inline-edit-col">
+				<span class="title inline-edit-categories-label"><?php _e( 'Competitions', 'sportspress' ); ?></span>
+				<!--<input type="hidden" name="sp_competition[]" value="0">-->
+				<ul class="cat-checklist">
+					<?php foreach ( $competitions as $competition ) { ?>
+					<li><label class="selectit"><input value="<?php echo $competition->ID; ?>" type="checkbox" name="sp_competition[]"> <?php echo $competition->post_title; ?></label></li>
+					<?php } ?>
+				</ul>
+			</div>
+		</fieldset>
+		<?php
+	}
 
 	/**
 	 * Save quick edit boxes
@@ -290,7 +353,8 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 		if ( isset( $_POST[ 'sp_number' ] ) ) {
 			update_post_meta( $post_id, 'sp_number', $_POST[ 'sp_number' ] );
 		}
-
+		
+		sp_update_post_meta_recursive( $post_id, 'sp_competition', sp_array_value( $_POST, 'sp_competition', array() ) );
 		sp_update_post_meta_recursive( $post_id, 'sp_current_team', sp_array_value( $_POST, 'sp_current_team', array() ) );
 		sp_update_post_meta_recursive( $post_id, 'sp_past_team', sp_array_value( $_POST, 'sp_past_team', array() ) );
 		sp_update_post_meta_recursive( $post_id, 'sp_team', array_merge( array( sp_array_value( $_POST, 'sp_current_team', array() ) ), sp_array_value( $_POST, 'sp_past_team', array() ) ) );
@@ -340,6 +404,44 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 		</fieldset>
 		<?php
 	}
+	
+	/**
+	 * Bulk edit competitions
+	 *
+	 * @param string $column_name
+	 * @param string $post_type
+	 */
+	public function bulk_edit_competitions( $column_name, $post_type ) {
+		if ( $this->type !== $post_type ) return;
+		if ( 'sp_competition' !== $column_name ) return;
+
+		static $print_nonce = true;
+		if ( $print_nonce ) {
+			$print_nonce = false;
+			wp_nonce_field( plugin_basename( __FILE__ ), 'sp_player_edit_nonce' );
+		}
+
+		$competitions = get_posts( array(
+			'post_type' => 'sp_competition',
+			'numberposts' => -1,
+			'post_status' => 'publish',
+		) );
+		
+		if ( ! $competitions ) return;
+		?>
+		<fieldset class="inline-edit-col-right">
+			<div class="inline-edit-col">
+				<span class="title inline-edit-categories-label"><?php _e( 'Competitions', 'sportspress' ); ?></span>
+				<input type="hidden" name="sp_competition[]" value="0">
+				<ul class="cat-checklist">
+					<?php foreach ( $competitions as $competition ) { ?>
+					<li><label class="selectit"><input value="<?php echo $competition->ID; ?>" type="checkbox" name="sp_competition[]"> <?php echo $competition->post_title; ?></label></li>
+					<?php } ?>
+				</ul>
+			</div>
+		</fieldset>
+		<?php
+	}
 
 	/**
 	 * Save bulk edit boxes
@@ -350,6 +452,8 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 
 		$post_ids = ( ! empty( $_POST[ 'post_ids' ] ) ) ? $_POST[ 'post_ids' ] : array();
 
+		//$competitions = sp_array_value( $_POST, 'competitions', array() );
+		$competitions_new = sp_array_value( $_POST, 'competitions', array() );
 		$current_teams = sp_array_value( $_POST, 'current_teams', array() );
 		$past_teams = sp_array_value( $_POST, 'past_teams', array() );
 		$teams = array_merge( $current_teams, $past_teams );
@@ -358,6 +462,11 @@ class SP_Admin_CPT_Player extends SP_Admin_CPT {
 			foreach ( $post_ids as $post_id ) {
 				if ( ! current_user_can( 'edit_post', $post_id ) ) continue;
 
+				$competitions_current = get_post_meta( $post_id, 'sp_competition', false );
+				$competitions = array_merge( $competitions_current, $competitions_new );
+				$competitions = array_unique( array_filter( $competitions ) );
+				
+				sp_update_post_meta_recursive( $post_id, 'sp_competition', $competitions );
 				sp_add_post_meta_recursive( $post_id, 'sp_current_team', $current_teams );
 				sp_add_post_meta_recursive( $post_id, 'sp_past_team', $past_teams );
 				sp_add_post_meta_recursive( $post_id, 'sp_team', $teams );

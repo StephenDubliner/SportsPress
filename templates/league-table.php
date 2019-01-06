@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 $defaults = array(
 	'id' => get_the_ID(),
+	'competitions' => null,
+	'filter' => null,
 	'number' => -1,
 	'columns' => null,
 	'highlight' => null,
@@ -39,6 +41,23 @@ if ( ! isset( $link_posts ) ) {
 if ( ! isset( $highlight ) ) $highlight = get_post_meta( $id, 'sp_highlight', true );
 
 $table = new SP_League_Table( $id );
+
+//Get competitions ids
+if ( !$competitions ){
+$competitions = (array)get_post_meta( $id, 'sp_competition', false );
+}
+if ( $competitions ){
+$table->competitions = $competitions;
+}
+//Get filtering
+if ( !$filter ) {
+	if ( $competitions ) {
+		$filter = 'competition'; 
+	}else{
+		$filter = 'both';
+	}
+}
+$table->filter = $filter;
 
 if ( $show_title && false === $title && $id ):
 	$caption = $table->caption;

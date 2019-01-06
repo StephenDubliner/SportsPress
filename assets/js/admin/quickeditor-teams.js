@@ -24,19 +24,9 @@
 			var $post_row = $( '#post-' + $post_id );
 
 			// get the data
-			var $number = $( '.column-sp_number', $post_row ).text();
-			var $current_teams = String( $( '.column-sp_team', $post_row ).find( '.sp-player-teams' ).data( 'current-teams' ) ).split(',');
-			var $past_teams = String( $( '.column-sp_team', $post_row ).find( '.sp-player-teams' ).data( 'past-teams' ) ).split(',');
-			var $competitions = String( $( '.column-sp_competition', $post_row ).find( '.sp-player-competitions' ).data( 'competitions' ) ).split(',');
+			var $competitions = String( $( '.column-sp_competition', $post_row ).find( '.sp-team-competitions' ).data( 'competitions' ) ).split(',');
 
 			// populate the data
-			$( ':input[name="sp_number"]', $edit_row ).val( $number );
-			$( ':input[name="sp_current_team[]"]', $edit_row ).each(function() {
-				$(this).prop("checked", ($.inArray($(this).val(), $current_teams ) != -1));
-			});
-			$( ':input[name="sp_past_team[]"]', $edit_row ).each(function() {
-				$(this).prop("checked", ($.inArray($(this).val(), $past_teams ) != -1));
-			});
 			$( ':input[name="sp_competition[]"]', $edit_row ).each(function() {
 				$(this).prop("checked", ($.inArray($(this).val(), $competitions ) != -1));
 			});
@@ -54,16 +44,6 @@
 		});
 
 		// get the data
-		var $current_teams = [];
-		$bulk_row.find( 'input[name="sp_current_team[]"]:checked' ).each(function() {
-			$current_teams.push( $(this).val() );
-		});
-
-		var $past_teams = [];
-		$bulk_row.find( 'input[name="sp_past_team[]"]:checked' ).each(function() {
-			$past_teams.push( $(this).val() );
-		});
-
 		var $competitions = [];
 		$bulk_row.find( 'input[name="sp_competition[]"]:checked' ).each(function() {
 			$competitions.push( $(this).val() );
@@ -76,12 +56,10 @@
 			async: false,
 			cache: false,
 			data: {
-				action: 'save_bulk_edit_sp_player',
+				action: 'save_bulk_edit_sp_team',
 				post_ids: $post_ids,
-				current_teams: $current_teams,
-				past_teams: $past_teams,
 				competitions: $competitions,
-				nonce: $("#sp_player_edit_nonce").val()
+				nonce: $("#sp_team_edit_nonce").val()
 			}
 		});
 	});

@@ -17,6 +17,12 @@ class SP_Player_List extends SP_Secondary_Post {
 
 	/** @var array The sort priorities array. */
 	public $priorities;
+	
+	/** @var string The filter (competition || leagueseason || both(default)). */
+	public $filter;
+	
+	/** @var array The competitions IDs. */
+	public $competitions;
 
 	/**
 	 * Constructor
@@ -47,11 +53,24 @@ class SP_Player_List extends SP_Secondary_Post {
 			$season_ids = sp_get_the_term_ids( $this->ID, 'sp_season' );
 		}
 		$position_ids = sp_get_the_term_ids( $this->ID, 'sp_position' );
+
+		if ( $this->filter ):
+			$filter = $this->filter;
+		else:
+			$filter = 'both';
+		endif;
+		if ( $this->competitions ):
+			$competitions = array_filter( $this->competitions );
+		else:
+			$competitions = false;
+		endif;
+
 		if ( !is_null( $team_id ) && '0' != $team_id ) {
 			$team = $team_id;
 		}else{
 			$team = get_post_meta( $this->ID, 'sp_team', true );
 		}
+
 		$era = get_post_meta( $this->ID, 'sp_era', true );
 		$list_stats = (array)get_post_meta( $this->ID, 'sp_players', true );
 		$adjustments = get_post_meta( $this->ID, 'sp_adjustments', true );
@@ -107,12 +126,15 @@ class SP_Player_List extends SP_Secondary_Post {
 				'meta_key' => 'sp_number',
 				'orderby' => 'meta_value_num',
 				'order' => 'ASC',
+				'meta_query' => array(
+					'relation' => 'AND',
+					),
 				'tax_query' => array(
 					'relation' => 'AND',
 				),
 			);
 
-			if ( $league_ids ):
+			if ( $league_ids && $filter != 'competition' ):
 				$args['tax_query'][] = array(
 					'taxonomy' => 'sp_league',
 					'field' => 'term_id',
@@ -120,7 +142,7 @@ class SP_Player_List extends SP_Secondary_Post {
 				);
 			endif;
 
-			if ( $season_ids ):
+			if ( $season_ids && $filter != 'competition' ):
 				$args['tax_query'][] = array(
 					'taxonomy' => 'sp_season',
 					'field' => 'term_id',
@@ -146,6 +168,7 @@ class SP_Player_List extends SP_Secondary_Post {
 				);
 			endif;
 
+/*
 			if ( $position_ids ):
 				$args['tax_query'][] = array(
 					'taxonomy' => 'sp_position',
@@ -159,11 +182,53 @@ class SP_Player_List extends SP_Secondary_Post {
 			$players = (array) get_posts( $args );
 
 			$players = apply_filters( 'sportspress_player_list_players', $players, $args, $team, $team_key );
+			*/
+
+			
+			if ( $competitions && $filter == 'competition' ) :
+				unset($args['tax_query']);
+				if ( $position_ids ):
+					$args['tax_query'][] = array(
+						'taxonomy' => 'sp_position',
+						'field' => 'term_id',
+						'terms' => $position_ids
+					);
+				endif;
+				$args['meta_query'][] = array(
+					'key' => 'sp_competition',
+					'value' => $competitions,
+					'compare' => 'IN',
+				);
+			endif;
+			$args = apply_filters( 'sportspress_player_list_args', $args, $team );
+
+			$players = (array) get_posts( $args );
+			$players = apply_filters( 'sportspress_player_list_players', $players, $args, $team, $team_key );
+
+			if ( $competitions && $filter == 'both' ) :
+				unset($args['tax_query']);
+				if ( $position_ids ):
+					$args['tax_query'][] = array(
+						'taxonomy' => 'sp_position',
+						'field' => 'term_id',
+						'terms' => $position_ids
+					);
+				endif;
+				$args['meta_query'][] = array(
+					'key' => 'sp_competition',
+					'value' => $competitions,
+					'compare' => 'IN',
+				);
+				
+				$players_comps = get_posts( $args );
+				$players = array_merge( $players_comps, $players );
+			endif;
 
 			if ( $players && is_array( $players ) ) {
 				foreach ( $players as $player ) {
 					$player_ids[] = $player->ID;
 				}
+				$player_ids = array_unique($player_ids);
 			}
 		} else {
 			$player_ids = (array)get_post_meta( $this->ID, 'sp_player', false );

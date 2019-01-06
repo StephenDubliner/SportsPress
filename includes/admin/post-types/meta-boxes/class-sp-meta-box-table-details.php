@@ -29,6 +29,17 @@ class SP_Meta_Box_Table_Details {
 		$date_to = get_post_meta( $post->ID, 'sp_date_to', true );
 		$date_past = get_post_meta( $post->ID, 'sp_date_past', true );
 		$date_relative = get_post_meta( $post->ID, 'sp_date_relative', true );
+		$competition = (array) get_post_meta( $post->ID, 'sp_competition', true );
+		$args_comp = array(
+						'post_type' => 'sp_competition',
+						'name' => 'sp_competition[]',
+						'class' => 'sportspress-pages',
+						'show_option_none' => __( '&mdash; None &mdash;', 'sportspress' ),
+						'values' => 'ID',
+						'selected' => sp_array_value( $competition ),
+						'chosen' => true,
+						'tax_query' => array(),
+					);
 		?>
 		<div>
 			<p><strong><?php _e( 'Heading', 'sportspress' ); ?></strong></p>
@@ -67,12 +78,21 @@ class SP_Meta_Box_Table_Details {
 					</p>
 				</div>
 			</div>
-
+			<div class="sp-event-competition-field">
+			<p><strong><?php _e( 'Competition', 'sportspress' ); ?></strong></p>
+			<?php if ( ! sp_dropdown_pages( $args_comp ) ) { ?>
+			&mdash; None &mdash;
 			<?php
+						//sp_dropdown_pages( $args_comp );
+					}?>
+			</div>
+			<?php
+			if ( sp_array_value( $competition ) == '-1' || sp_array_value( $competition ) == '' ){
 			foreach ( $taxonomies as $taxonomy ) {
 				sp_taxonomy_field( $taxonomy, $post, true );
 			}
 			do_action( 'sportspress_meta_box_table_details', $post->ID );
+			}
 			?>
 			<p><strong>
 				<?php echo sp_get_post_mode_label( $post->ID ); ?>
@@ -97,6 +117,8 @@ class SP_Meta_Box_Table_Details {
 	 * Save meta box data
 	 */
 	public static function save( $post_id, $post ) {
+		//update_post_meta( $post_id, 'sp_competition', sp_array_value( $_POST, 'sp_competition', array() ) );
+		sp_update_post_meta_recursive( $post_id, 'sp_competition', sp_array_value( $_POST, 'sp_competition', array() ) );
 		update_post_meta( $post_id, 'sp_caption', esc_attr( sp_array_value( $_POST, 'sp_caption', 0 ) ) );
 		update_post_meta( $post_id, 'sp_date', sp_array_value( $_POST, 'sp_date', 0 ) );
 		update_post_meta( $post_id, 'sp_date_from', sp_array_value( $_POST, 'sp_date_from', null ) );

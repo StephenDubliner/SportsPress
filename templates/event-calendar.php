@@ -25,6 +25,8 @@ $defaults = array(
 	'season' => null,
 	'venue' => null,
 	'team' => null,
+	'competitions' => null,
+	'filter' => 'both',
 	'player' => null,
 	'initial' => true,
 	'caption_tag' => 'caption',
@@ -59,6 +61,10 @@ if ( $venue )
 	$calendar->venue = $venue;
 if ( $team )
 	$calendar->team = $team;
+if ( $competitions )
+	$calendar->competitions = $competitions;
+if ( $filter )
+	$calendar->filter = $filter;
 if ( $player )
 	$calendar->player = $player;
 if ($override_global_date) {

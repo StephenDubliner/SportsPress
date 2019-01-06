@@ -20,6 +20,13 @@ class SP_Meta_Box_Table_Data {
 	 */
 	public static function output( $post ) {
 		$table = new SP_League_Table( $post );
+		
+		//Check if there are Competitions assigned to table
+		$competitions = array_filter( get_post_meta( $post->ID, 'sp_competition', false ) );
+		if ( $competitions ){
+		$table->competitions = $competitions;
+		}
+
 		list( $columns, $usecolumns, $data, $placeholders, $merged ) = $table->data( true );
 		$adjustments = $table->adjustments;
 		$highlight = get_post_meta( $table->ID, 'sp_highlight', true );

@@ -19,6 +19,7 @@ $scrollable = get_option( 'sportspress_enable_scrollable_tables', 'yes' ) == 'ye
 $show_career_totals = 'yes' === get_option( 'sportspress_player_show_career_total', 'no' ) ? true : false;
 $sections = get_option( 'sportspress_player_performance_sections', -1 );
 $show_teams = apply_filters( 'sportspress_player_team_statistics', true );
+/*
 $leagues = array_filter( ( array ) get_the_terms( $id, 'sp_league' ) );
 
 // Sort Leagues by User Defined Order (PHP5.2 supported)
@@ -31,6 +32,34 @@ if ( ! function_exists( 'sortByOrder' ) ) {
 	}
 }
 usort($leagues, 'sortByOrder');
+
+*/
+$leagues = array();
+//Check if there are Competitions assigned to players
+		$competitions = array_filter( get_post_meta( $id, 'sp_competition', false ) );
+		if ( $competitions) {
+			foreach ( $competitions as $competition ) {
+				$leagues_array = (get_the_terms( $competition, 'sp_league' ));
+				if ( $leagues_array ) {
+					foreach ( $leagues_array as $league_ar ) {
+						if ( !isset( $unique_league[$league_ar->term_id] ) ) {
+							$unique_league[$league_ar->term_id] = $league_ar->name ;
+							$leagues[] = $league_ar;
+						}
+					}
+				}
+			}
+		}
+		$leagues_array = get_the_terms( $id, 'sp_league' );
+		if ( $leagues_array ) {
+			foreach ( $leagues_array as $league_ar ) {
+				if ( !isset( $unique_league[$league_ar->term_id] ) ) {
+					$unique_league[$league_ar->term_id] = $league_ar->name ;
+					$leagues[] = $league_ar;
+				}
+			}
+		}
+//$leagues = get_the_terms( $id, 'sp_league' );
 
 $positions = $player->positions();
 $player_sections = array();
@@ -50,7 +79,7 @@ if ( 1 == $sections ) {
 }
 
 // Loop through statistics for each league
-if ( is_array( $leagues ) ):
+if ( $leagues && is_array( $leagues ) ):
 	foreach ( $section_order as $section_id => $section_label ) {
 		if ( -1 !== $section_id && ! empty( $player_sections ) && ! in_array( $section_id, $player_sections ) ) continue;
 		

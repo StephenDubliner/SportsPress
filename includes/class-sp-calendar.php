@@ -27,6 +27,9 @@ class SP_Calendar extends SP_Secondary_Post {
 
 	/** @var string The match day. */
 	public $day;
+	
+	/** @var string The filter (competition || leagueseason || both(default)). */
+	public $filter;
 
 	/** @var int The league ID. */
 	public $league;
@@ -45,6 +48,9 @@ class SP_Calendar extends SP_Secondary_Post {
 	
 	/** @var string The event date. */
 	public $date_before;
+
+	/** @var array The competitions IDs. */
+	public $competitions;
 
 	/** @var int The player ID. */
 	public $player;
@@ -264,10 +270,19 @@ class SP_Calendar extends SP_Secondary_Post {
 			endswitch;
 		endif;
 
+		if ( $this->filter ):
+			$filter = $this->filter;
+		endif;
+		
+		if ( $this->competitions ):
+			$competitions = array_filter( $this->competitions );
+			if ( !isset( $filter ) ) { $filter = 'competition'; }
+		endif;
+
 		if ( $this->league ):
 			$league_ids = array( $this->league );
 		endif;
-
+		
 		if ( $this->season ):
 			$season_ids = array( $this->season );
 		endif;
@@ -363,7 +378,7 @@ class SP_Calendar extends SP_Secondary_Post {
 				endif;
 			endif;
 
-			if ( isset( $league_ids ) ) {
+			if ( isset( $league_ids ) && $filter != 'competition' ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => 'sp_league',
 					'field' => 'term_id',
@@ -371,7 +386,7 @@ class SP_Calendar extends SP_Secondary_Post {
 				);
 			}
 
-			if ( isset( $season_ids ) ) {
+			if ( isset( $season_ids ) && $filter != 'competition' ) {
 				$args['tax_query'][] = array(
 					'taxonomy' => 'sp_season',
 					'field' => 'term_id',
@@ -396,7 +411,15 @@ class SP_Calendar extends SP_Secondary_Post {
 					),
 				);
 			}
-		
+			
+			if ( isset( $competitions ) && $filter == 'competition' ) {
+					$args['meta_query'][] = array(
+						'key' => 'sp_competition',
+						'value' => $competitions,
+						'compare' => 'IN',
+					);
+			}
+				
 			if ( $this->event) {
 				$args['p'] = $this->event;
 			}
@@ -405,6 +428,7 @@ class SP_Calendar extends SP_Secondary_Post {
 				$args['post_status'] = 'publish';
 				$args['order'] = 'DESC';
 				$args['posts_per_page'] = ceil( $this->number / 2 );
+				
 				$results = get_posts( $args );
 				$results = array_reverse( $results, true );
 
