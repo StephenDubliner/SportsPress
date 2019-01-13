@@ -3,45 +3,52 @@
 	"outcomes": [
 						{ "name" : "Win", "condition" : ">" },
 						{ "name" : "Loss", "condition" : "<" },
+						{ "name" : "Draw", "condition" : "=" },
 						"Walkover"
 	],
 	"results": [
+						{ "name" : "g1p", "description" : "first game points" },
+						{ "name" : "g2p", "description" : "second game points" },
+						{ "name" : "g3p", "description" : "third game points" },
 						{ "name" : "gw", "description" : "games won", "primary" : 1 },
-						{ "name" : "gl", "description" : "games lost" },
-						{ "name" : "ddiv", "equation" : "10 + 1 - $div", "description" : "division bonus factor" }
-					
+						{ "name" : "gl", "description" : "games lost" }
 	],
 	"performance": [
-			{ "name" : "div", "description" : "division played" }
+						{ "name" : "ap", "description" : "points awarded in a match" }
 	],
 	"columns": [
-						{ "name" : "T", "equation" : "$eventsplayed", "description" : "Events played" },
-						{ "name" : "G", "equation" : "$eventsplayed", "description" : "Games played" },
-						{ "name" : "W", "equation" : "$win", "description" : "Wins" },
-						{ "name" : "L", "equation" : "$loss", "description" : "Losses" },
+						{ "name" : "T", "equation" : "$eventsplayed", "description" : "Matches played" },
+						{ "name" : "G", "equation" : "$gamesplayed", "description" : "Games played" },
+						{ "name" : "W", "equation" : "$win", "description" : "Games won" },
+						{ "name" : "L", "equation" : "$loss", "description" : "Games lost" },
 					
 						{ "name" : "%", "id" : "percent", "equation" : "$gwfor / ($gwfor + $glfor) * 100", "precision" : 2, "description" : "Wins ratio", "priority" : 2 },
-						{ "name" : "Points", "equation" : "$gwfor * 3 + $glfor", "priority" : 1 }
+						{ "name" : "Points", "equation" : "$ap", "priority" : 1 }
 	],
 	"metrics": [
 						{ "name" : "Height", "description" : "Player height" },
 						{ "name" : "Play R or L", "description" : "Play R or L" },
 						{ "name" : "Grade", "description" : "Grade" },
-						{ "name" : "Gender", "description" : "Gender" }
+						{ "name" : "Gender", "description" : "Gender" },
+						{ "name" : "BI", "description" : "BI" },
+						{ "name" : "Pseudo", "description" : "Pseudonim" },
+						{ "name" : "Club", "description" : "Club" }
 	],
 	"statistics": [
-						{ "name" : "Points", "equation" : "$gwfor * $ddiv + $glfor", "description" : "Basic points" },
+						{ "name" : "Points", "equation" : "$ap", "description" : "Basic points" },
 						{ "name" : "Games played", "equation" : "$gwfor + $glfor", "description" : "Games played" },
 						{ "name" : "Games won", "equation" : "$gwfor", "description" : "Games won" },
-						{ "name" : "Events played", "equation" : "$eventsplayed", "description" : "Events played" },
-						{ "name" : "Win ratio", "equation" : "$gwfor / ($gwfor +$glfor) *100", "description" : "Win ratio" }
+						{ "name" : "Matches played", "equation" : "$eventsplayed", "description" : "Matches played" },
+						{ "name" : "Win ratio", "equation" : "$gwfor / ($gwfor + $glfor) * 100", "description" : "Win ratio" }
 	],
 	"positions": ["MS","MD","XD","WS","WD"],
 	"options": {
-				"mode" : "player"		
+				"mode" : "player"
 	},
 	"specs": [
 				{ "name" : "Win Factor", "description" : "Win Factor" },
-				{ "name" : "Lost Factor", "description" : "Lost Factor" }
+				{ "name" : "Lost Factor", "description" : "Lost Factor" },
+				{ "name" : "Grade", "description" : "Division(s)" },
+				{ "name" : "Section", "description" : "MD, WD, MS, WS, XD" }
 	]
 }

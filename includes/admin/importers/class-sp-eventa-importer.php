@@ -9,6 +9,7 @@
 essentials:
 0. import players from BI db
 1. player name smart matching
+- teams auto smart name unique
 - import wrapped in transaction block
 - solution for unknown player
 - support number of result templates
@@ -16,7 +17,9 @@ essentials:
 21|21,2|0
 21,1|0
 - support for empty oponent players
-PlayerA,
+- auto event override/obsolete if found existing, event PK:date, season, league, teamA, teamB
+
+
 nice to haves:
 - replace events label with match
 - charts support
@@ -317,10 +320,24 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 							endif;
 
-							$aps=(11-$grade)*($team_results['gap']+$team_results['gbp']+$team_results['gcp']);
+							$aps=(11 - $grade) * ($team_results['gap'] + $team_results['gbp'] + $team_results['gcp']);
 							if($outcome<>'Win'):
 								$aps=$aps*.84;
 							endif;
+/*
+							$aps=(11 - $grade) * ($team_results['gw'] * 3 + $team_results['gl']);
+							if($team_results['gw'] = $team_results['gl'])
+							{
+								$aps=0;//TBD
+							}
+							elseif ($team_results['gw'] > $team_results['gl']) {
+								$aps=0;//TBD 
+							}
+							else{
+								$aps=0;//TBD
+							}
+*/
+
 
 							// Add to team results array
 							$team_results[ 'outcome' ][] = $outcome_slug;
