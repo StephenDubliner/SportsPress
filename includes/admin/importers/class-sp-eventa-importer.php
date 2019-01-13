@@ -56,6 +56,9 @@ function build_match($commonDetails, $rowA, $rowB){
 
 			$result['teams'][$tbTitle]['gw'] = $result['teams'][$taTitle]['gl'];
 			$result['teams'][$tbTitle]['gl'] = $result['teams'][$taTitle]['gw'];
+
+			$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
+			$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
 		}
 		else{
 			$result['teams'][$taTitle][$points > $points_b[$gkey] ? 'gw' : 'gl']++;
@@ -77,7 +80,78 @@ function build_match($commonDetails, $rowA, $rowB){
 		$result['teams'][$tbTitle]['outcome'] = 'Won';
 	}
 
+	$result['matchTitle'] = $taTitle . ' ' . get_option( 'sportspress_event_teams_delimiter', 'vs' ) . ' ' . $tbTitle;
 	return $result;
+}
+
+function link_player($player1_name, $league, $season, $match_id, $team_id){
+	$player1_id = null;
+	$player1_number = null;
+						// Find out if player exists
+					$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
+
+					// Get or insert player
+					if ( $player1_object ):
+
+						// Make sure player is published
+						//if ( $player_object->post_status != 'publish' ):
+						//	wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
+						//endif;
+
+						// Get player ID
+						$player1_id = $player1_object->ID;
+
+						// Get player number
+						$player1_number = get_post_meta( $player1_id, 'sp_number', true );
+
+					else:
+
+						// Insert player
+						$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player1_name ) ) );
+
+						// Flag as import
+						update_post_meta( $player1_id, '_sp_import', 1 );
+
+						// Update number
+						update_post_meta( $player1_id, 'sp_number', null );
+
+						// Get player number
+						$player1_number = null;
+
+					endif;
+
+					// Update league
+					if ( $league ):
+						wp_set_object_terms( $player1_id, $league, 'sp_league', true );
+					endif;
+
+					// Update season
+					if ( $season ):
+						wp_set_object_terms( $player1_id, $season, 'sp_season', true );
+					endif;
+
+					if ( isset( $match_id ) ):
+						add_post_meta( $match_id, 'sp_player', $player1_id );
+					endif;
+
+					// Get player teams
+					$player_teams = get_post_meta( $player1_id, 'sp_team', false );
+					$current_team = get_post_meta( $player1_id, 'sp_current_team', true );
+					$past_teams = get_post_meta( $player1_id, 'sp_past_team', false );
+
+					// Add team if not exists in player
+					if ( ! in_array( $team_id, $player_teams ) ):
+						add_post_meta( $player1_id, 'sp_team', $team_id );
+					endif;
+
+					// Add as past team or set current team if not set
+					if ( ! $current_team ):
+						update_post_meta( $player1_id, 'sp_current_team', $team_id );
+					elseif ( $current_team != $team_id && ! in_array( $team_id, $past_teams ) ):
+						add_post_meta( $player1_id, 'sp_past_team', $team_id );
+					endif;
+
+					//return array('id'=>$player1_id, 'number'=>$player1_number);
 }
 
 		function import( $array = array(), $columns = array( 'post_title' ) ) {
@@ -105,6 +179,7 @@ $importSize = sizeof($rows);
 //if($importSize%2 <> 0)
 //exit();
 $matches = array();
+$teamaName = $teambName = null;
 while ( $matchImportIdx < $importSize ):
 //print_r($rows);
 
@@ -119,7 +194,7 @@ while ( $matchImportIdx < $importSize ):
 					//print_r($rowA);
 					//print_r($rowB);
 
-					$matches[$matchImportIdx] = $this->build_match($commonDetails, $rowA, $rowB);
+					array_push ($matches, $this->build_match($commonDetails, $rowA, $rowB));
 				}
 	$matchImportIdx+=2;
 endwhile;
@@ -129,17 +204,40 @@ print_r($matches);
 foreach ( $matches as $match_idx => $match ):
 
 	// Define post type args
-	$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $date, 'post_title' => __( 'Event', 'sportspress' ) );
+	$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $date, 'post_title' => $match['matchTitle'] );
+
 	// Insert event
 	$match_id = wp_insert_post( $args );
+
 	// Flag as import
 	update_post_meta( $match_id, '_sp_import', 1 );
+
+	// Update event format
+	if ( $event_format ):
+		update_post_meta( $match_id, 'sp_format', $event_format );
+	endif;
+
+	// Update league
+	if ( $league ):
+		wp_set_object_terms( $match_id, $league, 'sp_league', false );
+	endif;
+
+	// Update season
+	if ( $season ):
+		wp_set_object_terms( $match_id, $season, 'sp_season', false );
+	endif;
+
+	// Update venue
+	wp_set_object_terms( $match_id, $match['venue'], 'sp_venue', false );
+
+	$this->imported ++;
 
 	foreach ( $match['teams'] as $team_name => $team_match_data ):
 
 		// Find out if team exists
 		$team_object = get_page_by_title( stripslashes( $team_name ), OBJECT, 'sp_team' );
 
+		$team_id = null;
 		// Get or insert team
 		if ( $team_object ):
 
@@ -160,6 +258,49 @@ foreach ( $matches as $match_idx => $match ):
 			update_post_meta( $team_id, '_sp_import', 1 );
 
 		endif;
+		
+		// Update league
+		if ( $league ):
+			wp_set_object_terms( $team_id, $league, 'sp_league', true );
+		endif;
+
+		// Update season
+		if ( $season ):
+			wp_set_object_terms( $team_id, $season, 'sp_season', true );
+		endif;
+
+		if ( isset( $match_id ) && isset( $team_id )):
+			// Add team to event
+			add_post_meta( $match_id, 'sp_team', $team_id );
+		endif;
+
+		list($player1_name, $player2_name) = $team_match_data['players'];
+		$this->link_player($player1_name, $league, $season, $match_id, $team_id);
+		$this->link_player($player2_name, $league, $season, $match_id, $team_id);
+
+						$team_results = array();
+						$team_results[ 'gap' ] = $results[0];
+						$team_results[ 'gbp' ] = $results[1];
+						$team_results[ 'gcp' ] = $results[2];
+						
+						$games = explode( '|', $row[7] );
+						$team_results[ 'gw' ] = $games[0];
+						$team_results[ 'gl' ] = $games[1];
+						// Get existing results
+						$event_results = get_post_meta( $match_id, 'sp_results', true );
+
+						// Create new array if results not exists
+						if ( ! $event_results ):
+							$event_results = array();
+						endif;
+
+						// Add team results to existing results
+						$event_results[ $team_id ] = $team_results;
+
+						// Update event results
+						update_post_meta( $match_id, 'sp_results', $event_results );
+						
+						update_post_meta( $match_id, 'sp_specs', array('grade'=> $match['matchGrade'], 'section'=> $match['matchSection'] ));//winfactor lostfactor
 	endforeach;
 endforeach;
 
