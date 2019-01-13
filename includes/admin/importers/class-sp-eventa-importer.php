@@ -471,8 +471,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 								//$performance[ $key ] = array_shift( $player );
 							//endforeach;
 							//$players[ $team_id ][ $player_id ] = $performance;
-							$players[ $team_id ][ $player1_id ] = array('ap'=> $aps);
-							$players[ $team_id ][ $player2_id ] = array('ap'=> $aps);
+							$players[ $team_id ][ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
+							$players[ $team_id ][ $player2_id ] = array('number' => $player2_number, 'ap'=> $aps);
 
 							// Get player teams
 							$player_teams = get_post_meta( $player1_id, 'sp_team', false );
