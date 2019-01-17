@@ -10,14 +10,15 @@ $$rankPoints = \sum_{i=1}^{n} ((11 - matchDivision_i) * \sum_{j=1}^{q} gamePoint
 ## Number of games won-lost  
 m - number of matches played
 
-$$rankPoints = \sum_{i=1}^{m} (allPayed_i - allLost_i gamesWonFor_i - gamesLostFor_i)$$ 
+$$rankPoints = \sum_{i=1}^{m} (\frac{gamesWonFor_i}{gamesPayedInMatch_i}) * matchReward_i$$ 
 
-example:
-g:0-2 -> rankPoints = (2 - 2)/2 * (reward)  
-g:1-1 -> rankPoints = (2 - 1)/2 * (reward)  
-g:2-0 -> rankPoints = (2 - 0)/2 * (reward)  
-g:3-2 -> rankPoints = (3 - 2)/5 * (reward)  
-g:3-1 -> rankPoints = (3 - 1)/4 * (reward)  
+example:  
+g:0-2 -> rankPoints = 0/2 * (reward)  
+g:1-1 -> rankPoints = 1/2 * (reward)  
+g:2-0 -> rankPoints = 2/2 * (reward)  
+g:3-2 -> rankPoints = 3/5 * (reward)  
+g:3-1 -> rankPoints = 3/4 * (reward)  
+g:2-3 -> rankPoints = 2/5 * (reward)  
 
 Can be scaled with the division factor.
 
