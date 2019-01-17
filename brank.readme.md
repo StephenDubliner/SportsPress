@@ -7,7 +7,7 @@ gamePoints - points in a game for the player
   
 $$rankPoints = \sum_{i=1}^{n} ((11 - matchDivision_i) * \sum_{j=1}^{q} gamePointsFor_j)$$ 
 
-## Number of games won-lost  
+## Number of games won over all played  
 m - number of matches played
 
 $$rankPoints = \sum_{i=1}^{m} (\frac{gamesWonFor_i}{gamesPayedInMatch_i}) * matchReward_i$$ 
