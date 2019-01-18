@@ -39,8 +39,6 @@ function build_match($commonDetails, $rowA, $rowB){
 	$result['matchGrade'] = $commonDetails[2];
 
 	$result['teams'] = array();
-	//print('rowA:');//Array ( [0] => A|B [1] => Win [2] => 21|12|21 [3] => 2|1 ) 
-	//print_r($rowA);
 	$points_a = explode( '|', $rowA[1] );
 	$points_b = explode( '|', $rowB[1] );
 	$players_a = explode( '|', $rowA[0] );
@@ -52,8 +50,6 @@ function build_match($commonDetails, $rowA, $rowB){
 	$isFirstGame = true;
 	$result['teams'][$taTitle]['results'] = array();
 	$result['teams'][$tbTitle]['results'] = array();
-	print_r('points_a:');
-	print_r($points_a);
 	foreach( $points_a as $gkey => $points ):
 	//for($i=0;$i<sizeof($points_a), $i++)
 		//$points_a[$i]
@@ -84,28 +80,31 @@ function build_match($commonDetails, $rowA, $rowB){
 		$result['teams'][$tbTitle]['results'][ $game_key ] = $points_b[$gkey];
 
 	endforeach;
+	
+//$this->Trace($taTitle.' gw:', $result['teams'][$taTitle]['results']);
+//$this->Trace($tbTitle.' gw:', $result['teams'][$tbTitle]['results']);
 
-	// $result['teams'][$taTitle]['results']['gw'] = $result['teams'][$taTitle]['gw'];
-	// $result['teams'][$tbTitle]['results']['gw'] = $result['teams'][$tbTitle]['gw'];
-	// $result['teams'][$taTitle]['results']['gl'] = $result['teams'][$taTitle]['gl'];
-	// $result['teams'][$tbTitle]['results']['gl'] = $result['teams'][$tbTitle]['gl'];	
-
-	// if($result['teams'][$taTitle]['gw'] > $result['teams'][$tbTitle]['gw']){
-	// 	$result['teams'][$taTitle]['outcome'] = 'Won';
-	// 	$result['teams'][$tbTitle]['outcome'] = 'Lost';
-	// }
-	// elseif($result['teams'][$taTitle]['gw'] = $result['teams'][$tbTitle]['gw']){
-	// 	$result['teams'][$taTitle]['outcome'] = 'Draw';
-	// 	$result['teams'][$tbTitle]['outcome'] = 'Draw';
-	// }
-	// else{
-	// 	$result['teams'][$taTitle]['outcome'] = 'Lost';
-	// 	$result['teams'][$tbTitle]['outcome'] = 'Won';
-	// }
-
+	if($result['teams'][$taTitle]['results']['gw'] > $result['teams'][$tbTitle]['results']['gw']){
+		$result['teams'][$taTitle]['outcomeLabel'] = 'Won';
+		$result['teams'][$tbTitle]['outcomeLabel'] = 'Lost';
+	}
+	elseif($result['teams'][$taTitle]['results']['gw'] = $result['teams'][$tbTitle]['results']['gw']){
+		$result['teams'][$taTitle]['outcomeLabel'] = 'Draw';
+		$result['teams'][$tbTitle]['outcomeLabel'] = 'Draw';
+	}
+	else{
+		$result['teams'][$taTitle]['outcomeLabel'] = 'Lost';
+		$result['teams'][$tbTitle]['outcomeLabel'] = 'Won';
+	}
 
 	$result['matchTitle'] = $taTitle . ' ' . get_option( 'sportspress_event_teams_delimiter', 'vs' ) . ' ' . $tbTitle;
 	return $result;
+}
+
+function trace($label, $o){
+	print_r('<br/>'.$label);
+	print_r($o);
+	print_r('<br/>');
 }
 
 function link_player($player1_name, $league, $season, $match_id, $team_id){
@@ -181,7 +180,7 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 					$result = array();
 					//$result[ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
 					$result = array('player_id' => $player1_id,'player_number' => $player1_number);
-//print_r($result);
+					
 					return $result;
 					//return array('player_ap' => $player_ap);
 					//return array('id'=>$player1_id, 'number'=>$player1_number);
@@ -214,7 +213,6 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 			$matches = array();
 			$teamaName = $teambName = null;
 			while ( $matchImportIdx < $importSize ):
-			//print_r($rows);
 
 			$row_check = array_filter( $rows[$matchImportIdx] );
 
@@ -222,18 +220,10 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 				$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
 				$rowA = array_slice( $rows[$matchImportIdx], 4);
 				$rowB = array_slice( $rows[$matchImportIdx+1], 4);
-
-				//print_r($commonDetails);
-				//print_r($rowA);
-				//print_r($rowB);
-
 				array_push ($matches, $this->build_match($commonDetails, $rowA, $rowB));
 			}
 			$matchImportIdx+=2;
 endwhile;
-// print_r('matches');
-// print_r($matches);
-// print_r('ematches');
 
 foreach ( $matches as $match ):
 
@@ -266,7 +256,6 @@ foreach ( $matches as $match ):
 
 	// Update venue
 	wp_set_object_terms( $match_id, $match['venue'], 'sp_venue', false );
-
 
 	$players = array();
 	foreach ( $match['teams'] as $team_name => $team_match_data ):
@@ -318,7 +307,10 @@ foreach ( $matches as $match ):
 		$meta1 = $this->link_player($player1_name, $league, $season, $match_id, $team_id);
 		$meta2 = $this->link_player($player2_name, $league, $season, $match_id, $team_id);
 
-		$ap = $team_match_data['results']['gap'] * 10;
+		$ap = $team_match_data['results']['gap'] 
+			+ $team_match_data['results']['gbp'] //* 100 
+			+ $team_match_data['results']['gcp'] //* 10000
+			;
 		$players[ $team_id ] = array(
 			$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
 			$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
@@ -333,22 +325,50 @@ foreach ( $matches as $match ):
 			$event_results = array();
 		endif;
 
-		//print_r($team_match_data['results']);
 		// Add team results to existing results
 		$event_results[ $team_id ] = $team_match_data['results'];//$team_results;
 
+	$outcome_slug = null;
+	$outcome = $team_match_data['outcomeLabel'];
+	$this->Trace('team_name:', $team_name);
+	$this->Trace('outcomeLabel:', $outcome);
+		
+
+							// Get or insert outcome
+							$outcome_object = get_page_by_title( stripslashes( $outcome ), OBJECT, 'sp_outcome' );
+
+							if ( $outcome_object ):
+
+								// Make sure outcome is published
+								if ( $outcome_object->post_status != 'publish' ):
+									wp_update_post( array( 'ID' => $outcome_object->ID, 'post_status' => 'publish' ) );
+								endif;
+
+								// Get outcome slug
+								$outcome_slug = $outcome_object->post_name;
+
+							else:
+
+								// Insert outcome
+								$outcome_id = wp_insert_post( array( 'post_type' => 'sp_outcome', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $outcome ) ) );
+
+								// Get outcome slug
+							    $post_data = get_post( $outcome_id, ARRAY_A );
+							    $outcome_slug = $post_data['post_name'];
+
+								// Flag as import
+								update_post_meta( $outcome_id, '_sp_import', 1 );
+
+							endif;
+							$event_results[ $team_id ][ 'outcome' ][] = $outcome_slug;
 		// Update event results
 		update_post_meta( $match_id, 'sp_results', $event_results );
 		
 		update_post_meta( $match_id, 'sp_specs', array('grade'=> $match['matchGrade'], 'section'=> $match['matchSection'] ));//winfactor lostfactor
 
-
 	endforeach;
 	// Add player performance to last event if available
 	if ( isset( $match_id ) && isset( $players ) && sizeof( $players ) > 0 ):
-		print_r('PB');
-		print_r($players);
-		print_r('PE');
 		update_post_meta( $match_id, 'sp_players', $players );
 	endif;	
 
