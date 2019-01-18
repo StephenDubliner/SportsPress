@@ -521,6 +521,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 			// Add player performance to last event if available
 			if ( isset( $id ) && isset( $players ) && sizeof( $players ) > 0 ):
+				print_r($players);
 				update_post_meta( $id, 'sp_players', $players );
 			endif;
 
