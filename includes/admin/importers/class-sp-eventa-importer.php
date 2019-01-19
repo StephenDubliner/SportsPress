@@ -102,6 +102,10 @@ function build_match($commonDetails, $rowA, $rowB){
 			$game_key = 'gbp';
 		elseif( $gkey == 2 ):
 			$game_key = 'gcp';
+		elseif( $gkey == 3 ):
+			$game_key = 'gdp';
+		elseif( $gkey == 4 ):
+			$game_key = 'gep';						
 		endif;
 		$result['teams'][$taTitle]['results'][ $game_key ] = $points;
 		$result['teams'][$tbTitle]['results'][ $game_key ] = $points_b[$gkey];
@@ -338,19 +342,21 @@ foreach ( $matches as $match ):
 		      $team_match_data['results']['gap'] 
 			+ $team_match_data['results']['gbp'] //* 100 
 			+ $team_match_data['results']['gcp'] //* 10000
+			+ $team_match_data['results']['gdp']
+			+ $team_match_data['results']['gep']
 			) / 2;
 		if($team_match_data['outcomeLabel']=='Won'):
 			$ap = $ap * 1.4;
 		elseif($team_match_data['outcomeLabel']=='Draw'):
 			$ap = $ap * 1.1;
 		endif;
+
 		$players[ $team_id ] = array(
 			$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
 			$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
 		);
-		//$players[ $team_id ] = array();
 
-						// Get existing results
+		// Get existing results
 		$event_results = get_post_meta( $match_id, 'sp_results', true );
 
 		// Create new array if results not exists
