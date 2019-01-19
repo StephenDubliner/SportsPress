@@ -31,6 +31,30 @@ if ( class_exists( 'WP_Importer' ) ) {
 			//	$this->columns = array_merge( $this->columns, $performance_labels );
 		}
 
+function teamNameFromPiped($input){
+	$pa_name = null; 
+	$pb_name = null;
+	$result = null; //'unknown';
+	$two_players = explode( '|', $input );
+	sort($two_players);
+	list($pa_name, $pb_name) = $two_players;
+	$pa_name = trim($pa_name);
+	$pb_name = trim($pb_name);
+	if (sizeof($pa_name) > 0 && sizeof($pb_name) > 0):
+		$result = $pa_name . ' with ' . $pb_name; 
+		// $result = min(to_lower($pa_name), to_lower($pb_name)) == to_lower($pa_name) ? $pa_name : $pb_name;
+		// $result .= ' with ' . max(to_lower($pa_name), to_lower($pb_name)) == to_lower($pa_name) ? $pa_name : $pb_name;;
+	elseif (sizeof($pa_name) > 0 && sizeof($pb_name) == 0):
+		$result =  $pa_name . ' with unknknown';
+	elseif (sizeof($pa_name) == 0 && sizeof($pb_name) > 0):
+		$result =  $pb_name . ' with unknknown';
+	elseif (sizeof($pa_name) == 0 && sizeof($pb_name) == 0):
+		$result =  'unknknown team';
+	endif;
+
+	return $result;
+}
+
 function build_match($commonDetails, $rowA, $rowB){
 	$result = array();
 	$result['matchDate'] = $commonDetails[0];
@@ -44,8 +68,11 @@ function build_match($commonDetails, $rowA, $rowB){
 	$players_a = explode( '|', $rowA[0] );
 	$players_b = explode( '|', $rowB[0] );
 
-	$taTitle = str_replace('|',' with ', $rowA[0]);
-	$tbTitle = str_replace('|',' with ', $rowB[0]);
+	$taTitle = $this->teamNameFromPiped($rowA[0]);
+	$tbTitle = $this->teamNameFromPiped($rowB[0]);
+
+	// $taTitle = str_replace('|',' with ', $rowA[0]);
+	// $tbTitle = str_replace('|',' with ', $rowB[0]);
 
 	$isFirstGame = true;
 	$result['teams'][$taTitle]['results'] = array();
@@ -180,7 +207,7 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 					$result = array();
 					//$result[ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
 					$result = array('player_id' => $player1_id,'player_number' => $player1_number);
-					
+
 					return $result;
 					//return array('player_ap' => $player_ap);
 					//return array('id'=>$player1_id, 'number'=>$player1_number);
@@ -307,10 +334,16 @@ foreach ( $matches as $match ):
 		$meta1 = $this->link_player($player1_name, $league, $season, $match_id, $team_id);
 		$meta2 = $this->link_player($player2_name, $league, $season, $match_id, $team_id);
 
-		$ap = $team_match_data['results']['gap'] 
+		$ap = (11 - $match['matchGrade']) * (
+		      $team_match_data['results']['gap'] 
 			+ $team_match_data['results']['gbp'] //* 100 
 			+ $team_match_data['results']['gcp'] //* 10000
-			;
+			) / 2;
+		if($team_match_data['outcomeLabel']=='Won'):
+			$ap = $ap * 1.4;
+		elseif($team_match_data['outcomeLabel']=='Draw'):
+			$ap = $ap * 1.1;
+		endif;
 		$players[ $team_id ] = array(
 			$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
 			$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
