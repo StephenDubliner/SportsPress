@@ -40,16 +40,16 @@ function teamNameFromPiped($input){
 	list($pa_name, $pb_name) = $two_players;
 	$pa_name = trim($pa_name);
 	$pb_name = trim($pb_name);
-	if (sizeof($pa_name) > 0 && sizeof($pb_name) > 0):
+	if (trim($pa_name) != '' && trim($pb_name) != ''):
 		$result = $pa_name . ' with ' . $pb_name; 
 		// $result = min(to_lower($pa_name), to_lower($pb_name)) == to_lower($pa_name) ? $pa_name : $pb_name;
 		// $result .= ' with ' . max(to_lower($pa_name), to_lower($pb_name)) == to_lower($pa_name) ? $pa_name : $pb_name;;
-	elseif (sizeof($pa_name) > 0 && sizeof($pb_name) == 0):
+	elseif (trim($pa_name) != '' && trim($pb_name) == ''):
 		$result =  $pa_name . ' with unknknown';
-	elseif (sizeof($pa_name) == 0 && sizeof($pb_name) > 0):
+	elseif (trim($pa_name) == '' && trim($pb_name) != ''):
 		$result =  $pb_name . ' with unknknown';
-	elseif (sizeof($pa_name) == 0 && sizeof($pb_name) == 0):
-		$result =  'unknknown team';
+	elseif (trim($pa_name) == '' && trim($pb_name) == ''):
+		$result = 'unknknown team';
 	endif;
 
 	return $result;
@@ -65,8 +65,8 @@ function build_match($commonDetails, $rowA, $rowB){
 	$result['teams'] = array();
 	$points_a = explode( '|', $rowA[1] );
 	$points_b = explode( '|', $rowB[1] );
-	$players_a = explode( '|', $rowA[0] );
-	$players_b = explode( '|', $rowB[0] );
+	//$players_a = explode( '|', $rowA[0] );
+	//$players_b = explode( '|', $rowB[0] );
 
 	$taTitle = $this->teamNameFromPiped($rowA[0]);
 	$tbTitle = $this->teamNameFromPiped($rowB[0]);
@@ -142,7 +142,10 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 
 	$player1_id = null;
 	$player1_number = null;
-						// Find out if player exists
+	$result = array();
+					if(trim($player1_name) != ''):
+$this->Trace('link_player:',$player1_name);
+					// Find out if player exists
 					$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
 
 					// Get or insert player
@@ -208,8 +211,9 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 						add_post_meta( $match_id, 'sp_player', $player1_id );
 					endif;
 					//$aps= 0;//todo
-					$result = array();
+
 					//$result[ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
+					endif;
 					$result = array('player_id' => $player1_id,'player_number' => $player1_number);
 
 					return $result;
@@ -351,11 +355,24 @@ foreach ( $matches as $match ):
 			$ap = $ap * 1.1;
 		endif;
 
-		$players[ $team_id ] = array(
-			$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
-			$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
-		);
+		$k =array();
+		if($meta1['player_id'] != null):
+			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap);
+		endif;
 
+		if($meta2['player_id'] != null):
+			$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap);
+		endif;
+
+		$players[ $team_id ] = $k;
+
+		// array(
+		// 	$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
+		// 	$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
+		// );
+
+		// $this->Trace('p:',$players[ $team_id ]);
+		// $this->Trace('k:',$k);
 		// Get existing results
 		$event_results = get_post_meta( $match_id, 'sp_results', true );
 
