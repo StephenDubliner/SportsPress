@@ -16,29 +16,81 @@ function makeRandomDateInclusive($startDate,$endDate){
 }
 
 makeRandomDateInclusive('2009-04-01','2009-04-03');
+function randome_name($gender){
+	return $gender=='M' ? 'Jack' : 'Ann';
+}
 
-$all_players = array(
-'1231212' => array('firstname' => '', 'lastname' => '', gender => '', grade => '')
+function randome_surname(){
+	return 'Smith';
+}
+
+//$all_players = array(
+//'1231212' => array('firstname' => '', 'lastname' => '', gender => '', grade => '')
 );
+for($i=0; $i < 100; i++):
+	$gender = array_rand(array('M', 'F'), 1);
+	$all_players[i] = array(
+		'firstname' => randome_name($gender),
+		'lastname' => randome_surname(),
+		'gender' => $gender,
+		'grade' => $grade
+	);
+endfor;
+
 $search_result = array_intersect_key($all_players, array(array("gender" => "M", "grade" => "2")));
 
+$annual_events = array(
+array(
+	'title'=>'St Valentines', 
+	'date'=>'', 
+	'league'=>'Bonanza', 
+	'venue'=>'Baldoyle', 
+	'formatPoints' => '21',
+	'grades'=>array(2,3,4,5,6,7,8,9),
+	'sections'=>array('XD')),
+//more
+);
+$all_players = array(
+'000001' => array('name' => 'AN AL', 'firstname' => 'AN', 'lastname' => 'AL', gender' => 'M', 'grade' => '2', 'rl' => 'R'),
+);
+$teams_in_alltimes = array();
+$seasons = array('2016', '2017', '2018');
+foreach $season in $seasons:
 
+$teams_in_season = array();
+foreach $event in $annual_events:
+	$teams_in_event = array();
+	foreach $section in $event['sections']:
+		$excluded = array();
+		foreach($grade in $event['grades'])
+			if($section == 'XD'):
+				$pa = find_player('M', $grade, $excluded);
+				array_push($excluded, $pa);
+				$pb = find_player('F', $grade, $excluded);
+				array_push($excluded, $pb);
+				$team_x = $pa['name']. '|' .$pb['name'];
 
-//md
-function create_team($section, $grade, $players){
-$pa = array();
-$pb = array();
-$pa['grade'] = $pb['grade'] = $grade;
-if($section == 'MD'):
-	$pa['gender'] = $pb['gender'] = 'M';
-elseif($section == 'WD'):
-	$pa['gender'] = $pb['gender'] = 'W';
-elseif($section == 'XD'):
-	$pa['gender'] = 'M';
-	$pb['gender'] = 'W';
-else
-endif;
-}
+				$pc = find_player('M', $grade, $excluded);
+				array_push($excluded, $pc);
+				$pd = find_player('F', $grade, $excluded);
+				array_push($excluded, $pd);
+				$team_y = $pc['name']. '|' .$pd['name'];
+
+			elseif($section == 'MD'):
+				die();//tbd
+			elseif($section == 'WD'):
+				die();//tbd
+			endif;
+
+			array_push($teams_in_event, array($team_x => array_merge($pa, $pb));
+			array_push($teams_in_event, array($team_y => array_merge($pc, $pd));
+		endforeach;	
+	endforeach;	
+	array_push($teams_in_season, $teams_in_event);
+endforeach;
+	array_push($teams_in_alltimes, $teams_in_season);
+endforeach;
+
 $two_teams = array(
 A|B => array(
 	'A' => array('gender' => 'M', 'grade' => '2', 'rl' => 'R', 'BI' => '123321'),
@@ -50,17 +102,17 @@ C|D => array(
 )
 );
 
-if
+
 function random_game_points($outcomeA, $expect, $max){
 	return $outcomeA == $expect ? $max : mt_rand(0,$max - 1);
 }
-1 g/m 15 top
+//1 g/m 15 top
 	$outcomeA = mt_rand(0,1);
 	$max = 15;
 	$gap['A'] = random_game_points($outcomeA, 1, $max); //$outcomeA == 1 ? 15 : mt_rand(0,14);
 	$gap['B'] = random_game_points($outcomeA, 0, $max); //$outcomeA == 0 ? 15 : mt_rand(0,14);
 
-2 g/m 15 top
+//2 g/m 15 top
 	$outcomeA = mt_rand(0,2);
 	$max = 15;
 	if($outcomeA == 2): //draw
@@ -75,7 +127,7 @@ function random_game_points($outcomeA, $expect, $max){
 		$gbp['B'] = $outcomeA == 0 ? 15 : mt_rand(0,14);
 	endif;
 
-3 g/m
+//3 g/m
 	$outcomeA = mt_rand(0,1);
 	$max = 15;
 	$gap['A'] = random_game_points($outcomeA, 1, $max);
@@ -85,7 +137,7 @@ function random_game_points($outcomeA, $expect, $max){
 	$gcp['A'] = random_game_points($outcomeA, 1, $max);
 	$gcp['B'] = random_game_points($outcomeA, 0, $max);
 
-5 b/m win: 3-0, 3-1, 3-2
+//5 b/m win: 3-0, 3-1, 3-2
 	$max = 11;
 	$outcomeA = mt_rand(0,1);
 	$win_pattern = mt_rand(0,2);
