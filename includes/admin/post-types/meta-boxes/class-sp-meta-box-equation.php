@@ -70,14 +70,14 @@ class SP_Meta_Box_Equation {
 		// Add 100 to constants
 		$constants[100] = 100;
 
-		// Add constants to options
+		// Add constants to options widefat 
 		$options[ 'Constants' ] = (array) $constants;
 
 		$options = apply_filters( 'sportspress_equation_options', $options );
 		?>
 		<div class="sp-equation-builder">
 			<div class="sp-data-table-container sp-equation-parts">
-				<table class="widefat sp-data-table">
+				<table class="sp-data-table">
 					<?php $i = 0; foreach ( $options as $label => $option ): ?>
 						<tr<?php if ( $i % 2 == 0 ): ?> class="alternate"<?php endif; ?>>
 							<th><?php _e( $label, 'sportspress' ); ?></th>
