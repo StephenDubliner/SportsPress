@@ -5,7 +5,7 @@ matchDivision - division the match/game was played in
 q- number of games in a match  
 gamePoints - points in a game for the player  
   
-$$rankPoints = \sum_{i=1}^{n} ((11 - matchDivision_i) * \sum_{j=1}^{q} gamePointsFor_j)$$ 
+$$rankPoints = \sum_{i=1}^{n} ((11 - matchDivision_i) \times \sum_{j=1}^{q} gamePointsFor_j)$$ 
 
 ## 2.[TBD]Number of games won fixed reward  
 
@@ -30,7 +30,7 @@ g:2-3 -> rankPoints = 1
 ## 3. Number of games won over all played  
 m - number of matches played
 
-$$rankPoints = \sum_{i=1}^{m} (\frac{gamesWonFor_i}{gamesPayedInMatch_i}) * matchReward_i$$ 
+$$rankPoints = \sum_{i=1}^{m} (\frac{gamesWonFor_i}{gamesPayedInMatch_i}) \times matchReward_i$$ 
 
 examples:  
 g:0-2 -> rankPoints = 0/2 * (reward)  
@@ -74,17 +74,17 @@ examples:
 
 ## 6. Proportional share in all points score scaled with match reward.  
 
-n - number of games in a match  
+g - number of games in a match  
 
-$$winnerRankPoints = formatFactor \times n \times gameRewardPoints \times max(0.51, \frac{\sum_{i=1}^{n} gamePointsFor_i}{\sum_{i=1}^{n} gamePointsAll_i})$$  
+$$winnerRankPoints = (11 - matchDivision_i) \times formatFactor \times g \times gameRewardPoints \times max(0.51, \frac{\sum_{j=1}^{g} gamePointsFor_j}{\sum_{j=1}^{g} gamePointsAll_j})$$  
 
-$$looserRankPoints = formatFactor \times n \times gameRewardPoints \times min(0.49, \frac{\sum_{i=1}^{n} gamePointsFor_i}{\sum_{i=1}^{n} gamePointsAll_i})$$  
+$$looserRankPoints = (11 - matchDivision_i) \times formatFactor \times g \times gameRewardPoints \times min(0.49, \frac{\sum_{i=1}^{g} gamePointsFor_i}{\sum_{i=1}^{g} gamePointsAll_i})$$  
 
 examples:  
-### a. 12-21, 15-21  
--> for $$winnerRankPoints = 1.05 \times 3 \times 210 \times max(0.51, \frac{21 + 21}{12 + 21 + 15 + 21}) = 661.5 \times max(0.51, 0.61) = 402.65$$
+### a. 12-21, 15-21  div 1
+-> for $$winnerRankPoints = (11 - 1) \times 1.05 \times 3 \times 210 \times max(0.51, \frac{21 + 21}{12 + 21 + 15 + 21}) = 6615 \times max(0.51, 0.61) = 402.65$$
 
--> against $$looserRankPoints = 1.05 \times 3 \times 210 \times min(0.49, \frac{12 + 12}{12 + 21 + 15 + 21}) = 661.5 \times min(0.49, 0.35) = 230.09$$
+-> against $$looserRankPoints = (11 - 1) \times 1.05 \times 3 \times 210 \times min(0.49, \frac{12 + 12}{12 + 21 + 15 + 21}) = 661.5 \times min(0.49, 0.35) = 2300.9$$
 
 note reward varies on games format:  
  11: 110  
