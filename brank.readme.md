@@ -82,9 +82,13 @@ $$looserRankPoints = (11 - matchDivision_i) \times formatFactor \times g \times 
 
 examples:  
 ### a. 12-21, 15-21  div 1
--> for $$winnerRankPoints = (11 - 1) \times 1.05 \times 3 \times 210 \times max(0.51, \frac{21 + 21}{12 + 21 + 15 + 21}) = 6615 \times max(0.51, 0.61) = 402.65$$
+-> for $$winnerRankPoints  
+= (11 - 1) \times 1.05 \times 3 \times 210 \times max(0.51, \frac{21 + 21}{12 + 21 + 15 + 21})  
+= 10 \times 661.5 \times max(0.51, 0.61) = 4026.5$$
 
--> against $$looserRankPoints = (11 - 1) \times 1.05 \times 3 \times 210 \times min(0.49, \frac{12 + 12}{12 + 21 + 15 + 21}) = 661.5 \times min(0.49, 0.35) = 2300.9$$
+-> against $$looserRankPoints  
+= (11 - 1) \times 1.05 \times 3 \times 210 \times min(0.49, \frac{12 + 12}{12 + 21 + 15 + 21})  
+= 10 \times 661.5 \times min(0.49, 0.35) = 2300.9$$
 
 note reward varies on games format:  
  11: 110  
