@@ -170,3 +170,51 @@ function random_game_points($outcomeA, $expect, $max){
 		$gep['B'] = random_game_points($outcomeA, 0, $max);
 	endif;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//ctrl + shift + p -> type -> tidy
+//ctrl + alt + t
+//"Project" -> "Add Folder to Project..."
+//r_meta
+//Packages/User/Package Control.sublime-settings
+//Packages/User/Preferences.sublime-settings
+//C:\temp\lg\www\brank\wp-content\plugins\SportsPress\includes\admin\post-types\meta-boxes\class-sp-meta-box-player-statistics.php
+update_post_meta( $player_id, 'sp_rank_history', array(
+			'from' => null,
+			'to' => null,
+			'position' => 12,
+			'previous_position' => 11,
+			'rankId' => null,
+			'player_other_ranks' => array(array('rank_id'=>'', 'position'=>''))
+			'direction' => null, //up,down,still
+			'is_history_top'=> false,
+			'is_history_bottom' => false,
+			'is_position_longest' => false,
+			'position_previous_players'=> array('player_id'=>32,'player_id'=>43),
+			'same_position_players'=> array('player_id'=>11),
+		));
