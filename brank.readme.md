@@ -71,3 +71,23 @@ examples:
 ### d. 6-21, 21-18 
 -> for $$rankPoints = \frac{6}{(6+21)2} + \frac{21}{(18+21)2}$$  
 -> against $$rankPoints = \frac{21}{(6+21)2} + \frac{18}{(18+21)2}$$  
+
+## 6. Proportional share in all points score scaled with match reward.  
+
+n - number of games in a match  
+
+$$winnerRankPoints = formatFactor \times n \times gameRewardPoints \times max(0.51, \frac{\sum_{i=1}^{n} gamePointsFor_i}{\sum_{i=1}^{n} gamePointsAll_i})$$  
+
+$$looserRankPoints = formatFactor \times n \times gameRewardPoints \times min(0.49, \frac{\sum_{i=1}^{n} gamePointsFor_i}{\sum_{i=1}^{n} gamePointsAll_i})$$  
+
+examples:  
+### a. 12-21, 15-21  
+-> for $$winnerRankPoints = 1.05 \times 3 \times 210 \times max(0.51, \frac{21 + 21}{12 + 21 + 15 + 21}) = 661.5 \times max(0.51, 0.61) = 402.65$$
+
+-> against $$looserRankPoints = 1.05 \times 3 \times 210 \times min(0.49, \frac{12 + 12}{12 + 21 + 15 + 21}) = 661.5 \times min(0.49, 0.35) = 230.09$$
+
+note reward varies on games format:  
+ 11: 110  
+ 15: 150  
+ 21: 210  
+ 5% for game with setting  
