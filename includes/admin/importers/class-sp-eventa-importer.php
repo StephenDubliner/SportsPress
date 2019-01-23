@@ -526,6 +526,9 @@ function randome_name($gender){
 	$women = array('Ann', 'Kate', 'Liz');
 	return $gender == 'M' ? $men[array_rand($men,1)] : $women[array_rand($women,1)];
 }
+	//get_mock_firstname_male
+	//get_mock_firstname_female
+	//$a = get_mock_surname();
 function randome_surname(){
 	return 'Smith'; //https://www.mockaroo.com/
 }
