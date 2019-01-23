@@ -595,6 +595,44 @@ function random_match_points($format, $max){//number of games in a match
 	return $result;
 }
 
+function random_match_points_complete($format, $max){//number of games in a match
+	$result = array();
+	$result_a = array();
+	$result_b = array();
+	if($format <3 ){
+		for($i = 0;$i < $format;$i++){
+			$outcome = mt_rand(0, 1);
+			array_push($result_a, $this->random_game_points($outcome, 1, $max));
+			array_push($result_b, $this->random_game_points($outcome, 0, $max));
+		}
+	}
+	else if($format == 3 ){
+		$in_two_strait_games = mt_rand(0, 1);
+		if($in_two_strait_games){
+			$outcome = mt_rand(0, 1);
+			for($i = 0;$i < 2;$i++){
+				array_push($result_a, $this->random_game_points($outcome, 1, $max));
+				array_push($result_b, $this->random_game_points($outcome, 0, $max));
+			}
+		}
+		else{
+			$outcome = mt_rand(0, 1);
+			for($i = 0;$i < 3;$i++){
+				if($i==1){
+					$outcome = $outcome == 0?1:0;
+				}
+				array_push($result_a, $this->random_game_points($outcome, 1, $max));
+				array_push($result_b, $this->random_game_points($outcome, 0, $max));
+			}
+		}
+	}
+	else if($format == 5 ){
+		//tbd
+	}
+
+	$result = array(0 => $result_a, 1 => $result_b);
+	return $result;
+}
 function random_two_teams($players, $grade, $section){
 	$teams_in_match = array();
 	$excluded = array();
@@ -625,7 +663,8 @@ function random_two_teams($players, $grade, $section){
 }
 function match_points_imploded($format, $max){
 	$result = array();
-	$points = $this->random_match_points($format, $max);
+	//$points = $this->random_match_points($format, $max);
+	$points = random_match_points_complete($format, $max);
 	array_push($result, implode ('|' , $points[0]));
 	array_push($result, implode ('|' , $points[1]));
 	return $result;
@@ -647,7 +686,6 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 	$seasons = array(2016);//, 2017, 2018
 	$all_players = $this->random_players();
 	$teams_in_alltimes = array();
-
 
 	$excluded = array();
 	foreach($seasons as $season):
@@ -712,8 +750,6 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 	//$this->importA($raw_import);
 	$this->Trace('raw_import', $raw_import);
 }
-
-
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->imported = $this->skipped = 0;
