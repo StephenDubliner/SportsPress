@@ -548,76 +548,79 @@ function random_player($gender, $grade, $id){
 		'id' => $id
 	);
 }
-
 function random_players(){
-		//$this->Trace('random_player',$this->random_player('M','6'));
-	//$this->Trace('random_player',$this->random_player('F','6'));
 	$all_players = array();
 	$gender = 'M';
-	//$genders = array('M', 'F');
+	$id = 0;
 	for($grade = 1; $grade < 11; $grade++):
-	//foreach($genders as $gender): //all grades
-	for($i = 0; $i < 20; $i++): //all grades
-		//$grade = $this->random_grade();
-		//$gender = $this->random_gender();
-		//array_push($all_players, $this->random_player($gender, $grade));
-		$gender = ($gender=='M')?'F':'M';
-		//$grade_label = $grade . '';
-		if($all_players[$gender] == null){
-			$all_players[$gender] = array();
-		}
-		if($all_players[$gender][$grade] == null){
-			$all_players[$gender][$grade] = array();
-		}
-		array_push($all_players[$gender][$grade], $this->random_player($gender, $grade, $i));
+		for($i = 0; $i < 20; $i++): //all grades
+			$gender = ($gender=='M')?'F':'M';
+			array_push($all_players, $this->random_player($gender, $grade, $id));
+			$id++;
+		endfor;
 	endfor;
-	//endforeach;
-	endfor;
-	//$this->Trace('all_players', $all_players);
 	return $all_players;
 }
 
-function find_player($players, $gender, $grade, $excluded){
+function find_player($players, $gender, $grade, &$excluded){
 	$result = null;
-	//$search_result = array_intersect_key($players, array(array('gender' => $gender, 'grade' => $grade)));
-	// if(is_array( $search_result ) && sizeof( $search_result )){
-	// 	$result = $search_result[0];
-	// }
-
-	$key = array_rand($players[$gender][$grade], 1);
-	$result = $players[$gender][$grade][$key];
-	if($result)
-	{
-		$this->Trace('failed to fetch', null);
-		$this->Trace('gender', $gender);
-		$this->Trace('grade', $grade);
-		$this->Trace('key', $key);
-		die();
+	foreach ($players as $player) {
+		if($player['gender'] == $gender 
+			&& $player['grade'] == $grade 
+			&& ! in_array($player['id'], $excluded)){
+				$result = $player;
+				array_push($excluded, $player['id']); 
+			break;
+		}
 	}
+
 	return $result;
 }
+
+function random_game_points($outcome, $expect, $max){
+	return $outcome == $expect ? $max : mt_rand(0, $max - 1);
+}
+
+function random_match_points($format, $max){//number of games in a match
+	$result = array();
+	$result_a = array();
+	$result_b = array();
+	for($i = 0;$i < $format;$i++){
+		$outcome = mt_rand(0, 1);
+		array_push($result_a, $this->random_game_points($outcome, 1, $max));
+		array_push($result_b, $this->random_game_points($outcome, 0, $max));
+		$result = array(0 => $result_a, 1 => $result_b);
+	}
+
+	return $result;
+}
+
 function random_two_teams($players, $grade, $section){
-		$teams_in_match = array();
-		$excluded=null;
-				if($section == 'XD'):
-				$pa = $this->find_player($players, 'M', $grade, $excluded);
-				$pb = $this->find_player($players, 'F', $grade, $excluded);
-				//$this->Trace('pa', $pa);
-				//$this->Trace('pb', $pb);
-				$team_x = $pa['name']. '|' .$pb['name'];
-				$teams_in_match[$team_x] = array($pa, $pb);
-				//$this->Trace('team_x', $team_x);
-				$pc = $this->find_player($players, 'M', $grade, $excluded);
-				$pd = $this->find_player($players, 'F', $grade, $excluded);
-				$team_y = $pc['name']. '|' .$pd['name'];
-				//$this->Trace('team_y', $team_y);
-				$teams_in_match[$team_y] = array($pc, $pd);
-			elseif($section == 'MD'):
-				die();//tbd
-			elseif($section == 'WD'):
-				die();//tbd
-			endif;
-			return $teams_in_match;
+	$teams_in_match = array();
+	$excluded = array();
+	if($section == 'XD'):
+		$pa = $this->find_player($players, 'M', $grade, $excluded);
+		$pb = $this->find_player($players, 'F', $grade, $excluded);
+		$team_x = $pa['name']. '|' .$pb['name'];
+		$teams_in_match[$team_x] = array($pa, $pb);
+		$pc = $this->find_player($players, 'M', $grade, $excluded);
+		$pd = $this->find_player($players, 'F', $grade, $excluded);
+		$team_y = $pc['name']. '|' .$pd['name'];
+		$teams_in_match[$team_y] = array($pc, $pd);
+	elseif($section == 'MD'):
+		die();//tbd
+	elseif($section == 'WD'):
+		die();//tbd
+	endif;
+
+	return $teams_in_match;
+}
+function match_points_imploded($format, $max){
+	$result = array();
+	$points = $this->random_match_points($format, $max);
+	array_push($result, implode ('|' , $points[0]));
+	array_push($result, implode ('|' , $points[1]));
+	return $result;
 }
 function importB( $array = array(), $columns = array( 'post_title' ) ) {
 
@@ -627,12 +630,13 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 		'date'=>'', 
 		'league'=>'Bonanza', 
 		'venue'=>'Baldoyle', 
-		'formatPoints' => '21',
-		'grades'=>array(3,6,8),
+		'formatGame' => '21',
+		'formatMatch' => '3',
+		'grades'=>array(3,6,8),//
 		'sections'=>array('XD')),
 	//more
 	);
-	$seasons = array(2016, 2017, 2018);
+	$seasons = array(2016);//, 2017, 2018
 	$all_players = $this->random_players();
 	$teams_in_alltimes = array();
 
@@ -644,7 +648,9 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 			$teams_in_event = array();
 			foreach($event['sections'] as $section):
 				foreach($event['grades'] as $grade):
-					array_push($teams_in_event, array($section => $this->random_two_teams($all_players, $grade, $section)));
+					for($i=0;$i<2;$i++){
+						array_push($teams_in_event, array($section => $this->random_two_teams($all_players, $grade, $section)));
+					}
 				endforeach;	
 			endforeach;	
 			array_push($teams_in_season, array($event['title'] => $teams_in_event));
@@ -652,29 +658,19 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 		array_push($teams_in_alltimes, array($season => $teams_in_season));
 	endforeach;
 
-	// $team_x = null;
-	// $team_y = null;
-
-	//array_push($teams_in_event, $this->random_two_teams($all_players, $grade,$section));
-			
-
-			//array_push($teams_in_event, array($team_x => array_merge($pa, $pb)));
-			//array_push($teams_in_event, array($team_y => array_merge($pc, $pd));
-			//$this->Trace('team_x', $team_x);
-			//$this->Trace('teams_in_event', $teams_in_event);
-	//$this->Trace('teams_in_alltimes', $teams_in_alltimes);
+	$this->Trace('teams_in_alltimes', $teams_in_alltimes);
 	$raw_import = array();
 	foreach ($teams_in_alltimes as $season => $teams_in_season) {
 		foreach ($teams_in_season as $event_title => $teams_in_eventX) {
 			foreach ($teams_in_eventX as $p => $q) {
-				// $ta=null;
-				// $tb=null;
-				// list($ta, $tb) = $match_teams;
-				//$this->Trace('match_teams', $match_teams);
-				foreach ($q as $teams_in_event_key => $teams_in_event) {
+				foreach ($q as $event_label => $teams_in_event) {
+					//$this->Trace('event_label', $event_label);
 					foreach ($teams_in_event as $event_sections) {
+						$format = $annual_events[$event_label]['formatMatch'];
+						$max = $annual_events[$event_label]['formatGame'];
 						foreach ($event_sections as $section => $section_teams){
 							$isMatchFirstRow = true;
+							$points_imploded = $this->match_points_imploded($format, $max);
 							foreach ($section_teams as $teamLabel => $team) {
 								$this->Trace('teamLabel', $teamLabel);
 								$this->Trace('section_teams', $section_teams);
@@ -682,29 +678,24 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 								if($isMatchFirstRow){
 									$row = 
 									'2018/12/29'.','
-									. $annual_events['St Valentines']['venue'].','
+									. $annual_events[$event_label]['venue'].','
 									//
 									. $team[0]['grade'].','
-									. $section.',';
+									. $section.',' . $teamLabel . ',' . $points_imploded[0];
 									$isMatchFirstRow = false;
 								}
 								else{
-									$row = ',,,,';
-
+									$row = ',,,,' . $teamLabel . ',' . $points_imploded[1];
 								}
-								$row .= $teamLabel . ','
-								. 'points';
 
+								//$row = $row . $teamLabel . ',' . 'points';
 								
 								//die();
 	//2018/12/29,Baldoyle,8,MD,|B,21|12|21
 								array_push($raw_import, $row);
 							}
-
 						}
-
 					}
-
 				}
 			}
 		}
