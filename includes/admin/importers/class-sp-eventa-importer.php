@@ -601,18 +601,26 @@ function random_two_teams($players, $grade, $section){
 	if($section == 'XD'):
 		$pa = $this->find_player($players, 'M', $grade, $excluded);
 		$pb = $this->find_player($players, 'F', $grade, $excluded);
-		$team_x = $pa['name']. '|' .$pb['name'];
-		$teams_in_match[$team_x] = array($pa, $pb);
+
 		$pc = $this->find_player($players, 'M', $grade, $excluded);
 		$pd = $this->find_player($players, 'F', $grade, $excluded);
-		$team_y = $pc['name']. '|' .$pd['name'];
-		$teams_in_match[$team_y] = array($pc, $pd);
 	elseif($section == 'MD'):
-		die();//tbd
-	elseif($section == 'WD'):
-		die();//tbd
-	endif;
+		$pa = $this->find_player($players, 'M', $grade, $excluded);
+		$pb = $this->find_player($players, 'M', $grade, $excluded);
 
+		$pc = $this->find_player($players, 'M', $grade, $excluded);
+		$pd = $this->find_player($players, 'M', $grade, $excluded);
+	elseif($section == 'WD'):
+		$pa = $this->find_player($players, 'F', $grade, $excluded);
+		$pb = $this->find_player($players, 'F', $grade, $excluded);
+
+		$pc = $this->find_player($players, 'F', $grade, $excluded);
+		$pd = $this->find_player($players, 'F', $grade, $excluded);
+	endif;
+	$team_x = $pa['name']. '|' .$pb['name'];
+	$teams_in_match[$team_x] = array($pa, $pb);
+	$team_y = $pc['name']. '|' .$pd['name'];
+	$teams_in_match[$team_y] = array($pc, $pd);
 	return $teams_in_match;
 }
 function match_points_imploded($format, $max){
@@ -627,13 +635,13 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 	$annual_events = array(
 	'St Valentines' => array(
 		'title'=>'St Valentines', 
-		'date'=>'', 
+		'date'=>'2016/12/29', 
 		'league'=>'Bonanza', 
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
 		'grades'=>array(3,6,8),//
-		'sections'=>array('XD')),
+		'sections'=>array('XD', 'MD', 'WD')),
 	//more
 	);
 	$seasons = array(2016);//, 2017, 2018
@@ -672,16 +680,17 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 							$isMatchFirstRow = true;
 							$points_imploded = $this->match_points_imploded($format, $max);
 							foreach ($section_teams as $teamLabel => $team) {
-								$this->Trace('teamLabel', $teamLabel);
-								$this->Trace('section_teams', $section_teams);
+								//$this->Trace('teamLabel', $teamLabel);
+								//$this->Trace('section_teams', $section_teams);
 								$row = null;
 								if($isMatchFirstRow){
 									$row = 
-									'2018/12/29'.','
+									  $annual_events[$event_label]['date'].','
 									. $annual_events[$event_label]['venue'].','
-									//
 									. $team[0]['grade'].','
-									. $section.',' . $teamLabel . ',' . $points_imploded[0];
+									. $section.',' 
+									. $teamLabel . ',' 
+									. $points_imploded[0];
 									$isMatchFirstRow = false;
 								}
 								else{
