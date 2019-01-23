@@ -82,9 +82,25 @@ function delete_all_posts_from_author($post_id) {
             wp_trash_post( $post_from_author, false); // Set to False if you want to send them to Trash.
         }
     }
-
-
 }
+// function build_random_match($venue, $event_date, $match_format){
+// 	$commonDetails[0] = $event_date;//'2019/01/01';
+// 	$commonDetails[1] = $venue; //random_token(array('Baldoyle','NIA','Terenure','Marino');
+// 	$commonDetails[2] = 7;
+// 	$commonDetails[3] = random_token(array('MD','WD','XD'));
+
+// 	$tapa = random_player();
+// 	$tapb = random_player();
+// 	$tbpa = random_player();
+// 	$tbpb = random_player();
+// 	$rgp = random_game_points($tapa, $tapb, $tbpa, $tbpb, $match_format);
+// 	$rowA[0] = 'A|B';//$rgp['ta']
+// 	$rowA[1] = '12|14';
+// 	$rowB[0] = 'C|D';
+// 	$rowB[1] = '21|21';
+// 	$result = build_match($commonDetails, $rowA, $rowB);
+// 	return $result;
+// }
 function build_match($commonDetails, $rowA, $rowB){
 	$result = array();
 	$result['matchDate'] = $this->nvl($commonDetails[0],'2019/01/01');
@@ -266,63 +282,58 @@ function match_hash($match){
 
 	return $result;
 }
-		function import( $array = array(), $columns = array( 'post_title' ) ) {
-			$this->imported = $this->skipped = 0;
-			if ( ! is_array( $array ) || ! sizeof( $array ) ):
-				$this->footer();
-				die();
-			endif;
+function importA( $array = array(), $columns = array( 'post_title' ) ) {
+		$rows = array_chunk( $array, sizeof( $columns ) );
 
-			$rows = array_chunk( $array, sizeof( $columns ) );
+	// Get event format, league, and season from post vars
+	$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
+	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
+	$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? false : $_POST['sp_season'] );
+	$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
 
-			// Get event format, league, and season from post vars
-			$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
-			$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
-			$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? false : $_POST['sp_season'] );
-			$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
+	// Get labels from result and performance post types
+	$result_labels = sp_get_var_labels( 'sp_result' );
+	$performance_labels = sp_get_var_labels( 'sp_performance' );
 
-			// Get labels from result and performance post types
-			$result_labels = sp_get_var_labels( 'sp_result' );
-			$performance_labels = sp_get_var_labels( 'sp_performance' );
+	//tbd
+	$matchImportIdx = 0;
+	$importSize = sizeof($rows);
+	//if($importSize%2 <> 0)
+	//exit();
+	$matches = array();
+	$teamaName = $teambName = null;
+	while ( $matchImportIdx < $importSize ):
 
-			//tbd
-			$matchImportIdx = 0;
-			$importSize = sizeof($rows);
-			//if($importSize%2 <> 0)
-			//exit();
-			$matches = array();
-			$teamaName = $teambName = null;
-			while ( $matchImportIdx < $importSize ):
+	$row_check = array_filter( $rows[$matchImportIdx] );
 
-			$row_check = array_filter( $rows[$matchImportIdx] );
+	if ( !empty( $row_check ) ) {
+		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
+		$rowA = array_slice( $rows[$matchImportIdx], 4);
+		$rowB = array_slice( $rows[$matchImportIdx+1], 4);
+		array_push ($matches, $this->build_match($commonDetails, $rowA, $rowB));
+		//array_push ($matches, $this->build_random_match());
+	}
+	$matchImportIdx += 2;
+	endwhile;
 
-			if ( !empty( $row_check ) ) {
-				$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
-				$rowA = array_slice( $rows[$matchImportIdx], 4);
-				$rowB = array_slice( $rows[$matchImportIdx+1], 4);
-				array_push ($matches, $this->build_match($commonDetails, $rowA, $rowB));
-			}
-			$matchImportIdx += 2;
-endwhile;
+	foreach ( $matches as $match ):
 
-foreach ( $matches as $match ):
+		$match_check = array_filter( $match );
+		if ( empty( $match_check ) ) continue;
+		$match_hash = $this->match_hash($match);
+		$this->Trace('match_hash', $match_hash);
 
-	$match_check = array_filter( $match );
-	if ( empty( $match_check ) ) continue;
-	$match_hash = $this->match_hash($match);
-	$this->Trace('match_hash', $match_hash);
+		global $post;
+		$cc_args = array(
+		    'posts_per_page'   => -1,
+		    'post_type'        => 'sp_event',
+		    'post_status' 	   => 'publish',
+		    'meta_key'         => 'sp_event_hash',
+		    'meta_value'       => $match_hash
+		);
+		$events_q = new WP_Query( $cc_args );
 
-global $post;
-$cc_args = array(
-    'posts_per_page'   => -1,
-    'post_type'        => 'sp_event',
-    'post_status' 	   => 'publish',
-    'meta_key'         => 'sp_event_hash',
-    'meta_value'       => $match_hash
-);
-$events_q = new WP_Query( $cc_args );
-
-$match_id = null;
+		$match_id = null;
 
 //$this->delete_all_posts_from_author(-1);
 
@@ -509,7 +520,210 @@ $this->Trace('team_match_data',$team_match_data);
 	$this->imported++;
 endforeach;
 
+}
+function randome_name($gender){
+	$men = array('Jack', 'Pat', 'Nick');
+	$women = array('Ann', 'Kate', 'Liz');
+	return $gender == 'M' ? $men[array_rand($men,1)] : $women[array_rand($women,1)];
+}
+function randome_surname(){
+	return 'Smith';
+}
+function random_gender(){
+	return mt_rand(0,1) == 0 ? 'M' : 'F';
+}
+function random_grade(){
+	return mt_rand(1,10) . '';
+}
+function random_player($gender, $grade, $id){
+	$firstname = $this->randome_name($gender);
+	$lastname = $this->randome_surname();
+	return array(
+		'firstname' => $firstname,
+		'lastname' => $lastname,
+		'name' => "$firstname $lastname",
+		'gender' => $gender,
+		'grade' => $grade,
+		'rl' => (mt_rand(0,1) == 0 ? 'R' : 'L'),
+		'id' => $id
+	);
+}
 
+function random_players(){
+		//$this->Trace('random_player',$this->random_player('M','6'));
+	//$this->Trace('random_player',$this->random_player('F','6'));
+	$all_players = array();
+	$gender = 'M';
+	//$genders = array('M', 'F');
+	for($grade = 1; $grade < 11; $grade++):
+	//foreach($genders as $gender): //all grades
+	for($i = 0; $i < 20; $i++): //all grades
+		//$grade = $this->random_grade();
+		//$gender = $this->random_gender();
+		//array_push($all_players, $this->random_player($gender, $grade));
+		$gender = ($gender=='M')?'F':'M';
+		//$grade_label = $grade . '';
+		if($all_players[$gender] == null){
+			$all_players[$gender] = array();
+		}
+		if($all_players[$gender][$grade] == null){
+			$all_players[$gender][$grade] = array();
+		}
+		array_push($all_players[$gender][$grade], $this->random_player($gender, $grade, $i));
+	endfor;
+	//endforeach;
+	endfor;
+	//$this->Trace('all_players', $all_players);
+	return $all_players;
+}
+
+function find_player($players, $gender, $grade, $excluded){
+	$result = null;
+	//$search_result = array_intersect_key($players, array(array('gender' => $gender, 'grade' => $grade)));
+	// if(is_array( $search_result ) && sizeof( $search_result )){
+	// 	$result = $search_result[0];
+	// }
+
+	$key = array_rand($players[$gender][$grade], 1);
+	$result = $players[$gender][$grade][$key];
+	if($result)
+	{
+		$this->Trace('failed to fetch', null);
+		$this->Trace('gender', $gender);
+		$this->Trace('grade', $grade);
+		$this->Trace('key', $key);
+		die();
+	}
+	return $result;
+}
+function random_two_teams($players, $grade, $section){
+		$teams_in_match = array();
+		$excluded=null;
+				if($section == 'XD'):
+				$pa = $this->find_player($players, 'M', $grade, $excluded);
+				$pb = $this->find_player($players, 'F', $grade, $excluded);
+				//$this->Trace('pa', $pa);
+				//$this->Trace('pb', $pb);
+				$team_x = $pa['name']. '|' .$pb['name'];
+				$teams_in_match[$team_x] = array($pa, $pb);
+				//$this->Trace('team_x', $team_x);
+				$pc = $this->find_player($players, 'M', $grade, $excluded);
+				$pd = $this->find_player($players, 'F', $grade, $excluded);
+				$team_y = $pc['name']. '|' .$pd['name'];
+				//$this->Trace('team_y', $team_y);
+				$teams_in_match[$team_y] = array($pc, $pd);
+			elseif($section == 'MD'):
+				die();//tbd
+			elseif($section == 'WD'):
+				die();//tbd
+			endif;
+			return $teams_in_match;
+}
+function importB( $array = array(), $columns = array( 'post_title' ) ) {
+
+	$annual_events = array(
+	'St Valentines' => array(
+		'title'=>'St Valentines', 
+		'date'=>'', 
+		'league'=>'Bonanza', 
+		'venue'=>'Baldoyle', 
+		'formatPoints' => '21',
+		'grades'=>array(3,6,8),
+		'sections'=>array('XD')),
+	//more
+	);
+	$seasons = array(2016, 2017, 2018);
+	$all_players = $this->random_players();
+	$teams_in_alltimes = array();
+
+
+	$excluded = array();
+	foreach($seasons as $season):
+		$teams_in_season = array();
+		foreach($annual_events as $event):
+			$teams_in_event = array();
+			foreach($event['sections'] as $section):
+				foreach($event['grades'] as $grade):
+					array_push($teams_in_event, array($section => $this->random_two_teams($all_players, $grade, $section)));
+				endforeach;	
+			endforeach;	
+			array_push($teams_in_season, array($event['title'] => $teams_in_event));
+		endforeach;
+		array_push($teams_in_alltimes, array($season => $teams_in_season));
+	endforeach;
+
+	// $team_x = null;
+	// $team_y = null;
+
+	//array_push($teams_in_event, $this->random_two_teams($all_players, $grade,$section));
+			
+
+			//array_push($teams_in_event, array($team_x => array_merge($pa, $pb)));
+			//array_push($teams_in_event, array($team_y => array_merge($pc, $pd));
+			//$this->Trace('team_x', $team_x);
+			//$this->Trace('teams_in_event', $teams_in_event);
+	//$this->Trace('teams_in_alltimes', $teams_in_alltimes);
+	$raw_import = array();
+	foreach ($teams_in_alltimes as $season => $teams_in_season) {
+		foreach ($teams_in_season as $event_title => $teams_in_eventX) {
+			foreach ($teams_in_eventX as $p => $q) {
+				// $ta=null;
+				// $tb=null;
+				// list($ta, $tb) = $match_teams;
+				//$this->Trace('match_teams', $match_teams);
+				foreach ($q as $teams_in_event_key => $teams_in_event) {
+					foreach ($teams_in_event as $event_sections) {
+						foreach ($event_sections as $section => $section_teams){
+							$isMatchFirstRow = true;
+							foreach ($section_teams as $teamLabel => $team) {
+								$this->Trace('teamLabel', $teamLabel);
+								$this->Trace('section_teams', $section_teams);
+								$row = null;
+								if($isMatchFirstRow){
+									$row = 
+									'2018/12/29'.','
+									. $annual_events['St Valentines']['venue'].','
+									//
+									. $team[0]['grade'].','
+									. $section.',';
+									$isMatchFirstRow = false;
+								}
+								else{
+									$row = ',,,,';
+
+								}
+								$row .= $teamLabel . ','
+								. 'points';
+
+								
+								//die();
+	//2018/12/29,Baldoyle,8,MD,|B,21|12|21
+								array_push($raw_import, $row);
+							}
+
+						}
+
+					}
+
+				}
+			}
+		}
+	}
+	//$this->importA($raw_import);
+	$this->Trace('raw_import', $raw_import);
+}
+
+
+
+function import( $array = array(), $columns = array( 'post_title' ) ) {
+	$this->imported = $this->skipped = 0;
+	if ( ! is_array( $array ) || ! sizeof( $array ) ):
+		$this->footer();
+		die();
+	endif;
+
+	//$this->importA($array, $columns);
+	$this->importB($array, $columns);
 
 			// Show Result
 			echo '<div class="updated settings-error below-h2"><p>
