@@ -527,7 +527,7 @@ function randome_name($gender){
 	return $gender == 'M' ? $men[array_rand($men,1)] : $women[array_rand($women,1)];
 }
 function randome_surname(){
-	return 'Smith';
+	return 'Smith'; //https://www.mockaroo.com/
 }
 function random_gender(){
 	return mt_rand(0,1) == 0 ? 'M' : 'F';
@@ -664,7 +664,7 @@ function random_two_teams($players, $grade, $section){
 function match_points_imploded($format, $max){
 	$result = array();
 	//$points = $this->random_match_points($format, $max);
-	$points = random_match_points_complete($format, $max);
+	$points = $this->random_match_points_complete($format, $max);
 	array_push($result, implode ('|' , $points[0]));
 	array_push($result, implode ('|' , $points[1]));
 	return $result;

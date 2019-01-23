@@ -94,6 +94,7 @@ class SP_Admin_Importers {
 	public function events_importerA() {
 		$this->includes();
 		
+		require 'importers/class-sp-eventa-importer.mock.php';
 	    require 'importers/class-sp-eventa-importer.php';
 
 	    // Dispatch
