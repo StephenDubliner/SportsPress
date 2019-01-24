@@ -1,3 +1,100 @@
+// $posts = $wpdb->get_results("SELECT * FROM $wpdb->postmeta
+// WHERE meta_key = 'cp_annonceur' AND  meta_value = 'professionnel' LIMIT 1", ARRAY_A);
+// $cc_args = array(
+//     'posts_per_page'   => -1,
+//     'post_type'        => 'post',
+//     'meta_key'         => 'cp_annonceur',
+//     'meta_value'       => 'professionnel'
+// );
+// $cc_query = new WP_Query( $cc_args );
+
+// the 'color' is 'blue' AND the 'price' is more than 1000 and less than 2000 and is enabled for Home page also
+// $cc_args = array(
+// 	'meta_query' => array(
+// 	  'posts_per_page' => 10,
+// 	  'post_type'      => 'product',
+// 		'relation' => 'AND',
+// 		array(
+// 			'key' => 'diplay_on_homepage',
+// 			'value' => 'true'
+// 		),
+// 		array(
+// 			'relation' => 'AND',
+// 			array(
+// 				'key' => 'color',
+// 				'value' => 'blue'
+// 			),
+// 			array(
+// 				'key' => 'price',
+// 				'value' => array( 1000, 2000 ),
+// 				'type' => 'numeric',
+// 				'compare' => 'BETWEEN'
+// 			)
+// 		)
+// 	)
+// );
+ 
+// $cc_query = new WP_Query( $cc_args );
+// the product is on sale and enabled for showing on home page
+// $cc_args = array(
+// 	'posts_per_page' => 10,
+// 	'post_type'      => 'product',
+// 	'meta_query' => array(
+// 		'relation' => 'AND',
+// 		array(
+// 			'key' => 'diplay_on_homepage',
+// 			'value' => 'true'
+// 		),
+// 		array(
+//                         'key'   => 'on_sale',
+// 			'value' => 'true'
+// 		),
+// 		array(
+//                         'key'   => 'is_available',
+// 			'value' => 'yes'
+// 		),
+// 	)
+// );
+// $cc_query = new WP_Query( $cc_args );
+// the product price is 1000 and more
+// $cc_args = array(
+// 	'posts_per_page' => 10,
+// 	'post_type'      => 'product',
+// 	'meta_query' => array(
+// 		array(
+// 			'key' => 'price',
+// 			'value' => 1000,
+// 			'type' => 'numeric',
+// 			'compare' => '>='
+// 		)
+// 	)
+// );
+ 
+// $cc_query = new WP_Query( $cc_args );
+<?php
+
+   $args = array('cat' => 4);
+   $category_posts = new WP_Query($args);
+
+   if($category_posts->have_posts()) : 
+      while($category_posts->have_posts()) : 
+         $category_posts->the_post();
+?>
+
+         <h1><?php the_title() ?></h1>
+         <div class='post-content'><?php the_content() ?></div>      
+
+<?php
+      endwhile;
+   else: 
+?>
+
+      Oops, there are no posts.
+
+<?php
+   endif;
+?>
+
 0. players of al genders, grades
 1. foreach event/comp: random date + season(date) + league + venue + format
 2. section
