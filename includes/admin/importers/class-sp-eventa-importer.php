@@ -109,17 +109,19 @@ function build_match($commonDetails, $rowA, $rowB){
 			$result['teams'][$taTitle]['results']['gw'] = $points > $points_b[$gkey] ? 1 : 0;
 			$result['teams'][$taTitle]['results']['gl'] = $points < $points_b[$gkey] ? 1 : 0;
 
-			$result['teams'][$tbTitle]['results']['gw'] = $result['teams'][$taTitle]['results']['gl'];
-			$result['teams'][$tbTitle]['results']['gl'] = $result['teams'][$taTitle]['results']['gw'];
+
 
 			$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
 			$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
 			$isFirstGame = false;
 		}
 		else{
-			$result['teams'][$taTitle]['results'][$points > $points_b[$gkey] ? 'gw' : 'gl']++;
-			$result['teams'][$tbTitle]['results'][$points < $points_b[$gkey] ? 'gw' : 'gl']++;
+			$result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] = $result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] + 1;
 		}
+
+			$result['teams'][$tbTitle]['results']['gw'] = $result['teams'][$taTitle]['results']['gl'];
+			$result['teams'][$tbTitle]['results']['gl'] = $result['teams'][$taTitle]['results']['gw'];
+
 		$game_key = null;
 		if( $gkey == 0 ):
 			$game_key = 'gap';
@@ -135,6 +137,11 @@ function build_match($commonDetails, $rowA, $rowB){
 		$result['teams'][$taTitle]['results'][ $game_key ] = $points;
 		$result['teams'][$tbTitle]['results'][ $game_key ] = $points_b[$gkey];
 
+
+		// $result['teams'][$taTitle]['results']['gw'] = 99;
+		// $result['teams'][$taTitle]['results']['gl'] = 1;
+		// $result['teams'][$tbTitle]['results']['gw'] = 57;
+		// $result['teams'][$tbTitle]['results']['gl'] = 2;
 	endforeach;
 	
 //$this->Trace($taTitle.' gw', $result['teams'][$taTitle]['results']);
