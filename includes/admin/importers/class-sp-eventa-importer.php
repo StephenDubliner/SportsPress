@@ -79,24 +79,7 @@ function delete_all_of_type() {
         $delete_count = sizeof(post_to_delete);
         $this->Trace('delete_count', $delete_count);
 }
-// function build_random_match($venue, $event_date, $match_format){
-// 	$commonDetails[0] = $event_date;//'2019/01/01';
-// 	$commonDetails[1] = $venue; //random_token(array('Baldoyle','NIA','Terenure','Marino');
-// 	$commonDetails[2] = 7;
-// 	$commonDetails[3] = random_token(array('MD','WD','XD'));
 
-// 	$tapa = random_player();
-// 	$tapb = random_player();
-// 	$tbpa = random_player();
-// 	$tbpb = random_player();
-// 	$rgp = random_game_points($tapa, $tapb, $tbpa, $tbpb, $match_format);
-// 	$rowA[0] = 'A|B';//$rgp['ta']
-// 	$rowA[1] = '12|14';
-// 	$rowB[0] = 'C|D';
-// 	$rowB[1] = '21|21';
-// 	$result = build_match($commonDetails, $rowA, $rowB);
-// 	return $result;
-// }
 function build_match($commonDetails, $rowA, $rowB){
 	$result = array();
 	$result['matchDate'] = $this->nvl($commonDetails[0],'2019/01/01');
@@ -147,7 +130,7 @@ function build_match($commonDetails, $rowA, $rowB){
 		elseif( $gkey == 3 ):
 			$game_key = 'gdp';
 		elseif( $gkey == 4 ):
-			$game_key = 'gep';						
+			$game_key = 'gep';
 		endif;
 		$result['teams'][$taTitle]['results'][ $game_key ] = $points;
 		$result['teams'][$tbTitle]['results'][ $game_key ] = $points_b[$gkey];
@@ -699,8 +682,8 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3,6,8),//
-		'sections'=>array('XD', 'MD', 'WD')),
+		'grades'=>array(3),//,6,8
+		'sections'=>array('XD')),//, 'MD', 'WD'
 	//more
 	);
 	$seasons = array(2016);//, 2017, 2018
@@ -750,26 +733,24 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 							foreach ($section_teams as $teamLabel => $team) {
 								//$this->Trace('teamLabel', $teamLabel);
 								//$this->Trace('section_teams', $section_teams);
-								$row = null;
+//2018/12/29,Baldoyle,8,MD,A|B,21|12|21
+//,,,,E|F,15|21|19
 								if($isMatchFirstRow){
-									$row = 
-									  $annual_events[$event_label]['date'].','
-									. $annual_events[$event_label]['venue'].','
-									. $team[0]['grade'].','
-									. $section.',' 
-									. $teamLabel . ',' 
-									. $points_imploded[0];
+									array_push($raw_import, $annual_events[$event_label]['date']);
+									array_push($raw_import, $annual_events[$event_label]['venue']);
+									array_push($raw_import, $team[0]['grade'] . '');
+									array_push($raw_import, $section);
+									array_push($raw_import, $teamLabel);
+									array_push($raw_import, $points_imploded[0]);
+									//array_push($raw_import, );
 									$isMatchFirstRow = false;
 								}
 								else{
-									$row = ',,,,' . $teamLabel . ',' . $points_imploded[1];
+									array_push($raw_import, '');array_push($raw_import, '');array_push($raw_import, '');array_push($raw_import, '');array_push($raw_import, '');array_push($raw_import, '');
+									array_push($raw_import, $teamLabel);
+									array_push($raw_import, $points_imploded[1]);
+									array_push($raw_import, '');array_push($raw_import, '');
 								}
-
-								//$row = $row . $teamLabel . ',' . 'points';
-								
-								//die();
-	//2018/12/29,Baldoyle,8,MD,|B,21|12|21
-								array_push($raw_import, $row);
 							}
 						}
 					}
@@ -779,7 +760,8 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 	}
 
 	$this->Trace('raw_import', $raw_import);
-	$this->import_matches($raw_import);
+	$this->Trace('file_import', $array);
+	$this->import_matches($raw_import, $columns);
 }
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
