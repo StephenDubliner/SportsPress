@@ -59,29 +59,25 @@ function nvl($val, $replace)
     if( is_null($val) || $val === '' )  return $replace;
     else                                return $val;
 }
-function delete_all_posts_from_author($post_id) {
+function delete_all_of_type() {
 
-    $id = -1;//$post->ID;
-
-    // Only trigger if post type is "company"
-    if ( get_post_type($id) == "company" || true) {
-
-        //$author_id = $post->post_author;
-
-        $posts_from_author = get_posts(
+		$post_type = array('sp_event', 'sp_team', 'sp_player');
+        $post_to_delete = get_posts(
             array(
                 'posts_per_page'    => -1,
                 'post_status'       => 'publish',
-                'post_type'         => array('sp_event'),
+                'post_type'         => $post_type,
                 //'author'            => $author_id,
                 'fields'            => 'ids', // Only get post ID's
             )
         );
 
-        foreach ( $posts_from_author as $post_from_author ) {
-            wp_trash_post( $post_from_author, false); // Set to False if you want to send them to Trash.
+        foreach ( $post_to_delete as $post_from_author ) {
+            //wp_trash_post( $post_from_author, false); // Set to False if you want to send them to Trash.
+            wp_delete_post( $post_from_author, true);
         }
-    }
+        $delete_count = sizeof(post_to_delete);
+        $this->Trace('delete_count', $delete_count);
 }
 // function build_random_match($venue, $event_date, $match_format){
 // 	$commonDetails[0] = $event_date;//'2019/01/01';
@@ -282,7 +278,7 @@ function match_hash($match){
 
 	return $result;
 }
-function importA( $array = array(), $columns = array( 'post_title' ) ) {
+function import_matches( $array = array(), $columns = array( 'post_title' ) ) {
 		$rows = array_chunk( $array, sizeof( $columns ) );
 
 	// Get event format, league, and season from post vars
@@ -335,7 +331,7 @@ function importA( $array = array(), $columns = array( 'post_title' ) ) {
 
 		$match_id = null;
 
-//$this->delete_all_posts_from_author(-1);
+//$this->delete_all_post_to_delete(-1);
 
 if($events_q->have_posts()):
 	$events_q->the_post();
@@ -522,15 +518,15 @@ endforeach;
 
 }
 function randome_name($gender){
-	$men = array('Jack', 'Pat', 'Nick');
-	$women = array('Ann', 'Kate', 'Liz');
-	return $gender == 'M' ? $men[array_rand($men,1)] : $women[array_rand($women,1)];
+	$men = get_mock_firstname_male();//array('Jack', 'Pat', 'Nick');
+	$women = get_mock_firstname_female();//array('Ann', 'Kate', 'Liz');
+	return $gender == 'M' ? $men[array_rand($men, 1)] : $women[array_rand($women, 1)];
 }
-	//get_mock_firstname_male
-	//get_mock_firstname_female
-	//$a = get_mock_surname();
+
 function randome_surname(){
-	return 'Smith'; //https://www.mockaroo.com/
+	$surname = get_mock_surname();
+	return $surname[array_rand($surname, 1)]
+	;//'Smith'; //https://www.mockaroo.com/
 }
 function random_gender(){
 	return mt_rand(0,1) == 0 ? 'M' : 'F';
@@ -556,7 +552,7 @@ function random_players(){
 	$gender = 'M';
 	$id = 0;
 	for($grade = 1; $grade < 11; $grade++):
-		for($i = 0; $i < 20; $i++): //all grades
+		for($i = 0; $i < 80; $i++): //all grades
 			$gender = ($gender=='M')?'F':'M';
 			array_push($all_players, $this->random_player($gender, $grade, $id));
 			$id++;
@@ -636,9 +632,9 @@ function random_match_points_complete($format, $max){//number of games in a matc
 	$result = array(0 => $result_a, 1 => $result_b);
 	return $result;
 }
-function random_two_teams($players, $grade, $section){
+function random_two_teams($players, $grade, $section, &$excluded){
 	$teams_in_match = array();
-	$excluded = array();
+
 	if($section == 'XD'):
 		$pa = $this->find_player($players, 'M', $grade, $excluded);
 		$pb = $this->find_player($players, 'F', $grade, $excluded);
@@ -662,18 +658,39 @@ function random_two_teams($players, $grade, $section){
 	$teams_in_match[$team_x] = array($pa, $pb);
 	$team_y = $pc['name']. '|' .$pd['name'];
 	$teams_in_match[$team_y] = array($pc, $pd);
+	if($pa['name'] == null){
+		$this->Trace('pa', $excluded);
+		die();
+	}
+	if($pb['name'] == null){
+		$this->Trace('pb', $excluded);
+		die();
+	}
+	if($pc['name'] == null){
+		$this->Trace('pc', $excluded);
+		die();
+	}
+	if($pd['name'] == null){
+		$this->Trace('pd', $excluded);
+		die();
+	}
+	if(team_x == $team_y){
+		$this->Trace('team_x', $team_x);
+		die();
+	}
 	return $teams_in_match;
 }
 function match_points_imploded($format, $max){
 	$result = array();
-	//$points = $this->random_match_points($format, $max);
-	$points = $this->random_match_points_complete($format, $max);
+	$points = $this->random_match_points($format, $max);
+	//$points = $this->random_match_points_complete($format, $max);
 	array_push($result, implode ('|' , $points[0]));
 	array_push($result, implode ('|' , $points[1]));
 	return $result;
 }
 function importB( $array = array(), $columns = array( 'post_title' ) ) {
 
+	$this->delete_all_of_type();
 	$annual_events = array(
 	'St Valentines' => array(
 		'title'=>'St Valentines', 
@@ -697,9 +714,19 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 			$teams_in_event = array();
 			foreach($event['sections'] as $section):
 				foreach($event['grades'] as $grade):
-					for($i=0;$i<2;$i++){
-						array_push($teams_in_event, array($section => $this->random_two_teams($all_players, $grade, $section)));
+
+					$excluded = array();
+					$teams = $this->random_two_teams($all_players, $grade, $section, $excluded);
+					$teams = array_merge($teams, $this->random_two_teams($all_players, $grade, $section, $excluded));
+					$teams = array_merge($teams, $this->random_two_teams($all_players, $grade, $section, $excluded));
+					foreach ($teams as $key1 => $t1) {
+						foreach ($teams as $key2 => $t2) {
+							if($key1 != $key2){
+								array_push($teams_in_event,array($section => array($key1 => $t1, $key2 => $t2)));
+							}
+						}
 					}
+
 				endforeach;	
 			endforeach;	
 			array_push($teams_in_season, array($event['title'] => $teams_in_event));
@@ -707,7 +734,7 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 		array_push($teams_in_alltimes, array($season => $teams_in_season));
 	endforeach;
 
-	$this->Trace('teams_in_alltimes', $teams_in_alltimes);
+	//$this->Trace('teams_in_alltimes', $teams_in_alltimes);
 	$raw_import = array();
 	foreach ($teams_in_alltimes as $season => $teams_in_season) {
 		foreach ($teams_in_season as $event_title => $teams_in_eventX) {
@@ -750,8 +777,9 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 			}
 		}
 	}
-	//$this->importA($raw_import);
+
 	$this->Trace('raw_import', $raw_import);
+	$this->import_matches($raw_import);
 }
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
@@ -761,7 +789,7 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 		die();
 	endif;
 
-	//$this->importA($array, $columns);
+	//$this->import_matches($array, $columns);
 	$this->importB($array, $columns);
 
 			// Show Result
