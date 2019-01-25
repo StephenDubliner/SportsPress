@@ -13,7 +13,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 		 */
 		public function __construct() {
 			$this->import_page = 'sp_eventA_csv';
-			$this->import_label = __( 'Import EventsAB', 'sportspress' );
+			$this->import_label = __( 'Import randomly generated Events', 'sportspress' );
 			$this->columns = array(
 				'post_date' => __( 'Date', 'sportspress' ),
 				//'post_time' => __( 'Time', 'sportspress' ),
@@ -40,6 +40,8 @@ function teamNameFromPiped($input){
 	list($pa_name, $pb_name) = $two_players;
 	$pa_name = trim($pa_name);
 	$pb_name = trim($pb_name);
+	if($pa_name == '' && $pb_name == '')
+		return null;
 	$unknown_player = 'unknknown';
 	//if (trim($pa_name) != '' && trim($pb_name) != ''):
 		$result = $this->nvl($pa_name, $unknown_player) . ' with ' . $this->nvl($pb_name, $unknown_player); 
@@ -62,7 +64,7 @@ function nvl($val, $replace)
 function delete_all_of_type() {
 
 		$post_type = array('sp_event', 'sp_team', 'sp_player');
-        $post_to_delete = get_posts(
+        $posts_to_delete = get_posts(
             array(
                 'posts_per_page'    => -1,
                 'post_status'       => 'publish',
@@ -72,15 +74,16 @@ function delete_all_of_type() {
             )
         );
 
-        foreach ( $post_to_delete as $post_from_author ) {
+        foreach ( $posts_to_delete as $post ) {
             //wp_trash_post( $post_from_author, false); // Set to False if you want to send them to Trash.
-            wp_delete_post( $post_from_author, true);
+            wp_delete_post( $post, true);
         }
-        $delete_count = sizeof(post_to_delete);
+        $delete_count = sizeof($post_to_delete);
         $this->Trace('delete_count', $delete_count);
 }
 
 function build_match($commonDetails, $rowA, $rowB){
+
 	$result = array();
 	$result['matchDate'] = $this->nvl($commonDetails[0],'2019/01/01');
 	$result['venue'] = $this->nvl($commonDetails[1],'Baldoyle');
@@ -90,46 +93,76 @@ function build_match($commonDetails, $rowA, $rowB){
 	$result['teams'] = array();
 	$points_a = explode( '|', $rowA[1] );
 	$points_b = explode( '|', $rowB[1] );
-
+	// $this->Trace('points_a',$points_a);
+	// $this->Trace('points_b',$points_b);
 	$taTitle = $this->teamNameFromPiped($rowA[0]);
 	$tbTitle = $this->teamNameFromPiped($rowB[0]);
+	if($taTitle == null || $tbTitle == null)
+	{
+		$this->Trace('rowA',$rowA);
+		$this->Trace('rowB',$rowB);
+		return null;
+	}
 
 	$isFirstGame = true;
 	$result['teams'][$taTitle]['results'] = array();
 	$result['teams'][$tbTitle]['results'] = array();
+
+	$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
+	$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
+	$agw = 0;
+	$agl = 0;
 	foreach( $points_a as $gkey => $points ):
-		if($isFirstGame){
-			$result['teams'][$taTitle]['results']['gw'] = $points > $points_b[$gkey] ? 1 : 0;
-			$result['teams'][$taTitle]['results']['gl'] = $points < $points_b[$gkey] ? 1 : 0;
+		//if($points == null && $points_b[$gkey] == null)	continue;
+		// if($isFirstGame){
+		// 	$result['teams'][$taTitle]['results']['gw'] = $points > $points_b[$gkey] ? 1 : 0;
+		// 	$result['teams'][$taTitle]['results']['gl'] = $points < $points_b[$gkey] ? 1 : 0;
 
-			$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
-			$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
-			$isFirstGame = false;
-		}
-		else{
-			$result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] = $result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] + 1;
-		}
+		// 	$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
+		// 	$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
+		// 	$isFirstGame = false;
+		// }
+		// else{
+		// 	$result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] = $result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] + 1;
+		// }
 
-			$result['teams'][$tbTitle]['results']['gw'] = $result['teams'][$taTitle]['results']['gl'];
-			$result['teams'][$tbTitle]['results']['gl'] = $result['teams'][$taTitle]['results']['gw'];
+		// if($isFirstGame){
+		// 	$result['teams'][$taTitle]['results']['gw'] = 0;
+		// 	$result['teams'][$taTitle]['results']['gl'] = 0;
+		// 	$isFirstGame = false;
+		// }
+
+		if(intval($points) > intval($points_b[$gkey])){
+			$agw = $agw + 1;
+		}
+		else
+		{
+			$agl = $agl + 1;
+		}
 
 		$game_key = null;
 		if( $gkey == 0 ):
-			$game_key = 'gap';
-		elseif( $gkey == 1 ):
-			$game_key = 'gbp';
-		elseif( $gkey == 2 ):
-			$game_key = 'gcp';
-		elseif( $gkey == 3 ):
-			$game_key = 'gdp';
-		elseif( $gkey == 4 ):
-			$game_key = 'gep';
+				$game_key = 'gap';
+			elseif( $gkey == 1 ):
+				$game_key = 'gbp';
+			elseif( $gkey == 2 ):
+				$game_key = 'gcp';
+			elseif( $gkey == 3 ):
+				$game_key = 'gdp';
+			elseif( $gkey == 4 ):
+				$game_key = 'gep';
 		endif;
 		$result['teams'][$taTitle]['results'][ $game_key ] = $points;
 		$result['teams'][$tbTitle]['results'][ $game_key ] = $points_b[$gkey];
 
 	endforeach;
-	
+
+	$result['teams'][$taTitle]['results']['gw'] = $agw;
+	$result['teams'][$taTitle]['results']['gl'] = $agl;
+
+	$result['teams'][$tbTitle]['results']['gw'] = $result['teams'][$taTitle]['results']['gl'];
+	$result['teams'][$tbTitle]['results']['gl'] = $result['teams'][$taTitle]['results']['gw'];
+
 //$this->Trace($taTitle.' gw', $result['teams'][$taTitle]['results']);
 //$this->Trace($tbTitle.' gw', $result['teams'][$tbTitle]['results']);
 
@@ -137,7 +170,7 @@ function build_match($commonDetails, $rowA, $rowB){
 		$result['teams'][$taTitle]['outcomeLabel'] = 'Won';
 		$result['teams'][$tbTitle]['outcomeLabel'] = 'Lost';
 	}
-	elseif($result['teams'][$taTitle]['results']['gw'] = $result['teams'][$tbTitle]['results']['gw']){
+	elseif($result['teams'][$taTitle]['results']['gw'] == $result['teams'][$tbTitle]['results']['gw']){
 		$result['teams'][$taTitle]['outcomeLabel'] = 'Draw';
 		$result['teams'][$tbTitle]['outcomeLabel'] = 'Draw';
 	}
@@ -255,8 +288,8 @@ function match_hash($match){
 	return $result;
 }
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
-		$rows = array_chunk( $array, sizeof( $columns ) );
 
+	$rows = array_chunk( $array, 8 );//sizeof( $columns )
 	$event_format = $this->nvl($event_meta['event_format'], false);;
 	$league = $this->nvl($event_meta['league'], -1);;
 	$season = $this->nvl($event_meta['season'], -1);
@@ -281,18 +314,21 @@ function import_matches( $array = array(), $event_meta = array(), $columns = arr
 		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
 		$rowA = array_slice( $rows[$matchImportIdx], 4);
 		$rowB = array_slice( $rows[$matchImportIdx+1], 4);
-		array_push ($matches, $this->build_match($commonDetails, $rowA, $rowB));
+		$match = $this->build_match($commonDetails, $rowA, $rowB);
+		if($match != null)
+			array_push ($matches, $match);
 		//array_push ($matches, $this->build_random_match());
 	}
 	$matchImportIdx += 2;
 	endwhile;
-
+	$mc = sizeof($matches);
+	$this->Trace('processing matches', $mc);
 	foreach ( $matches as $match ):
 
 		$match_check = array_filter( $match );
 		if ( empty( $match_check ) ) continue;
 		$match_hash = $this->match_hash($match);
-		$this->Trace('match_hash', $match_hash);
+		//$this->Trace('match_hash', $match_hash);
 
 		global $post;
 		$cc_args = array(
@@ -313,7 +349,7 @@ if($events_q->have_posts()):
 	$match_id = $post->ID;
 
 	//$this->Trace('ev', $post);
-	//$this->Trace('match_id found', $match_id);
+	$this->Trace('match skipped', $match_hash);
 	$this->skipped++;
 	continue;
 else:
@@ -396,7 +432,7 @@ endif;
 			add_post_meta( $match_id, 'sp_player', 0 );
 		endif;
 
-$this->Trace('team_match_data',$team_match_data);
+//$this->Trace('team_match_data',$team_match_data);
 		list($player1_name, $player2_name) = $team_match_data['players'];
 		$meta1 = $this->link_player($player1_name, $league, $season, $match_id, $team_id);
 		$meta2 = $this->link_player($player2_name, $league, $season, $match_id, $team_id);
@@ -559,11 +595,15 @@ function random_match_points($format, $max){//number of games in a match
 	$result = array();
 	$result_a = array();
 	$result_b = array();
+	$wc = 0;
 	for($i = 0;$i < $format;$i++){
+		if(($format == 3 || $format == 5) && $wc == ($format -1))
+			break;
 		$outcome = mt_rand(0, 1);
 		array_push($result_a, $this->random_game_points($outcome, 1, $max));
 		array_push($result_b, $this->random_game_points($outcome, 0, $max));
 		$result = array(0 => $result_a, 1 => $result_b);
+		$wc = $wc + ($outcome == 1 ? 1 : 0);
 	}
 
 	return $result;
@@ -665,7 +705,6 @@ function match_points_imploded($format, $max){
 }
 function importB( $array = array(), $columns = array( 'post_title' ) ) {
 
-	$this->delete_all_of_type();
 	$annual_events = array(
 	'St Valentines' => array(
 		'title'=>'St Valentines', 
@@ -764,10 +803,10 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->imported = $this->skipped = 0;
-	if ( ! is_array( $array ) || ! sizeof( $array ) ):
-		$this->footer();
-		die();
-	endif;
+	// if ( ! is_array( $array ) || ! sizeof( $array ) ):
+	// 	$this->footer();
+	// 	die();
+	// endif;
 	// Get event format, league, and season from post vars
 	$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
 	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
@@ -776,21 +815,24 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 	
 	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
 	//$this->import_matches($array, $event_meta, $columns);
+	$this->delete_all_of_type();
 	$this->importB($array, $event_meta, $columns);
 
-			// Show Result
-			echo '<div class="updated settings-error below-h2"><p>
-				'.sprintf( __( 'Import complete - imported <strong>%s</strong> eventsA and skipped <strong>%s</strong>.', 'sportspress' ), $this->imported, $this->skipped ).'
-			</p></div>';
+	// Show Result
+	echo '<div class="updated settings-error below-h2"><p>
+		'.sprintf( __( 'Import complete - imported <strong>%s</strong> eventsA and skipped <strong>%s</strong>.', 'sportspress' ), $this->imported, $this->skipped ).'
+	</p></div>';
 
-			$this->import_end();
-		}
+	$this->import_end();
+}
 
 
 		/**
 		 * Performs post-import cleanup of files and the cache
 		 */
 		function import_end() {
+			$import_end = array('imported' => $this->imported, 'skipped' => $this->skipped);
+			$this->Trace('import_end',$import_end);
 			echo '<p>' . __( 'All done!', 'sportspress' ) . ' <a href="' . admin_url('edit.php?post_type=sp_event') . '">' . __( 'View Events', 'sportspress' ) . '</a>' . '</p>';
 
 			do_action( 'import_end' );
@@ -806,10 +848,10 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 			echo '<div class="narrow">';
 			echo '<p>' . __( 'Hi there! Choose a .csv file to upload, then click "Upload file and import".', 'sportspress' ).'</p>';
 			echo '<p>' . sprintf( __( 'Events need to be defined with columns in a specific order (3+ columns). <a href="%s">Click here to download a sample</a>.', 'sportspress' ), plugin_dir_url( SP_PLUGIN_FILE ) . 'dummy-data/events-sample.csv' ) . '</p>';
-			echo '<p>' . sprintf( __( 'Supports CSV files generated by <a href="%s">LeagueLobster</a>.', 'sportspress' ), 'http://tboy.co/leaguelobster' ) . '</p>';
-			wp_import_upload_form( 'admin.php?import=sp_eventA_csv&step=1' );
-			echo '</div>';
+			//$this->wp_trigger_import( 'admin.php?import=sp_eventA_csv&step=1' );
+			$this->import();
 		}
+
 
 		/**
 		 * options function.
