@@ -1,5 +1,10 @@
 // $posts = $wpdb->get_results("SELECT * FROM $wpdb->postmeta
 // WHERE meta_key = 'cp_annonceur' AND  meta_value = 'professionnel' LIMIT 1", ARRAY_A);
+
+// $posts = $wpdb->get_results("SELECT * FROM $wpdb->postmeta
+// WHERE meta_key = 'sp_player' AND meta_key='Pseudo' and meta_value = '$player_token' LIMIT 1", ARRAY_A);
+
+
 // $cc_args = array(
 //     'posts_per_page'   => -1,
 //     'post_type'        => 'post',

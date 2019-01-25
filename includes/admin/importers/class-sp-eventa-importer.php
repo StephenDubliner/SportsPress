@@ -90,26 +90,17 @@ function build_match($commonDetails, $rowA, $rowB){
 	$result['teams'] = array();
 	$points_a = explode( '|', $rowA[1] );
 	$points_b = explode( '|', $rowB[1] );
-	//$players_a = explode( '|', $rowA[0] );
-	//$players_b = explode( '|', $rowB[0] );
 
 	$taTitle = $this->teamNameFromPiped($rowA[0]);
 	$tbTitle = $this->teamNameFromPiped($rowB[0]);
-
-	// $taTitle = str_replace('|',' with ', $rowA[0]);
-	// $tbTitle = str_replace('|',' with ', $rowB[0]);
 
 	$isFirstGame = true;
 	$result['teams'][$taTitle]['results'] = array();
 	$result['teams'][$tbTitle]['results'] = array();
 	foreach( $points_a as $gkey => $points ):
-	//for($i=0;$i<sizeof($points_a), $i++)
-		//$points_a[$i]
 		if($isFirstGame){
 			$result['teams'][$taTitle]['results']['gw'] = $points > $points_b[$gkey] ? 1 : 0;
 			$result['teams'][$taTitle]['results']['gl'] = $points < $points_b[$gkey] ? 1 : 0;
-
-
 
 			$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
 			$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
@@ -137,11 +128,6 @@ function build_match($commonDetails, $rowA, $rowB){
 		$result['teams'][$taTitle]['results'][ $game_key ] = $points;
 		$result['teams'][$tbTitle]['results'][ $game_key ] = $points_b[$gkey];
 
-
-		// $result['teams'][$taTitle]['results']['gw'] = 99;
-		// $result['teams'][$taTitle]['results']['gl'] = 1;
-		// $result['teams'][$tbTitle]['results']['gw'] = 57;
-		// $result['teams'][$tbTitle]['results']['gl'] = 2;
 	endforeach;
 	
 //$this->Trace($taTitle.' gw', $result['teams'][$taTitle]['results']);
@@ -178,82 +164,82 @@ function link_player($player1_name, $league, $season, $match_id, $team_id){
 	$player1_id = null;
 	$player1_number = null;
 	$result = array();
-					if(trim($player1_name) != ''):
+	if(trim($player1_name) != ''):
 $this->Trace('link_player',$player1_name);
-					// Find out if player exists
-					$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
+	// Find out if player exists
+	$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
 
-					// Get or insert player
-					if ( $player1_object ):
+	// Get or insert player
+	if ( $player1_object ):
 $this->Trace('exists',$player1_name);
-						// Make sure player is published
-						if ( $player_object->post_status != 'publish' ):
-							wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
-						endif;
+		// Make sure player is published
+		if ( $player_object->post_status != 'publish' ):
+			wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
+		endif;
 
-						// Get player ID
-						$player1_id = $player1_object->ID;
+		// Get player ID
+		$player1_id = $player1_object->ID;
 $this->Trace('id',$player1_id);
-						// Get player number
-						$player1_number = get_post_meta( $player1_id, 'sp_number', true );
+		// Get player number
+		$player1_number = get_post_meta( $player1_id, 'sp_number', true );
 
-					else:
+	else:
 $this->Trace('new player',$player1_name);
-						// Insert player
-						$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player1_name ) ) );
+		// Insert player
+		$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player1_name ) ) );
 
-						// Flag as import
-						update_post_meta( $player1_id, '_sp_import', 1 );
+		// Flag as import
+		update_post_meta( $player1_id, '_sp_import', 1 );
 
-						// Update number
-						update_post_meta( $player1_id, 'sp_number', null );
+		// Update number
+		update_post_meta( $player1_id, 'sp_number', null );
 
-						// Get player number
-						$player1_number = null;
+		// Get player number
+		$player1_number = null;
 
-					endif;
+	endif;
 
-					// Update league
-					if ( $league ):
-						wp_set_object_terms( $player1_id, $league, 'sp_league', true );
-					endif;
+	// Update league
+	if ( $league ):
+		wp_set_object_terms( $player1_id, $league, 'sp_league', true );
+	endif;
 
-					// Update season
-					if ( $season ):
-						wp_set_object_terms( $player1_id, $season, 'sp_season', true );
-					endif;
+	// Update season
+	if ( $season ):
+		wp_set_object_terms( $player1_id, $season, 'sp_season', true );
+	endif;
 
 
 
-					// Get player teams
-					$player_teams = get_post_meta( $player1_id, 'sp_team', false );
-					$current_team = get_post_meta( $player1_id, 'sp_current_team', true );
-					$past_teams = get_post_meta( $player1_id, 'sp_past_team', false );
+	// Get player teams
+	$player_teams = get_post_meta( $player1_id, 'sp_team', false );
+	$current_team = get_post_meta( $player1_id, 'sp_current_team', true );
+	$past_teams = get_post_meta( $player1_id, 'sp_past_team', false );
 
-					// Add team if not exists in player
-					if ( ! in_array( $team_id, $player_teams ) ):
-						add_post_meta( $player1_id, 'sp_team', $team_id );
-					endif;
+	// Add team if not exists in player
+	if ( ! in_array( $team_id, $player_teams ) ):
+		add_post_meta( $player1_id, 'sp_team', $team_id );
+	endif;
 
-					// Add as past team or set current team if not set
-					if ( ! $current_team ):
-						update_post_meta( $player1_id, 'sp_current_team', $team_id );
-					elseif ( $current_team != $team_id && ! in_array( $team_id, $past_teams ) ):
-						add_post_meta( $player1_id, 'sp_past_team', $team_id );
-					endif;
-					
-					if ( $match_id ):
-						add_post_meta( $match_id, 'sp_player', $player1_id );
-					endif;
-					//$aps= 0;//todo
+	// Add as past team or set current team if not set
+	if ( ! $current_team ):
+		update_post_meta( $player1_id, 'sp_current_team', $team_id );
+	elseif ( $current_team != $team_id && ! in_array( $team_id, $past_teams ) ):
+		add_post_meta( $player1_id, 'sp_past_team', $team_id );
+	endif;
+	
+	if ( $match_id ):
+		add_post_meta( $match_id, 'sp_player', $player1_id );
+	endif;
+	//$aps= 0;//todo
 
-					//$result[ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
-					endif;
-					$result = array('player_id' => $player1_id,'player_number' => $player1_number);
+	//$result[ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
+	endif;
+	$result = array('player_id' => $player1_id,'player_number' => $player1_number);
 
-					return $result;
-					//return array('player_ap' => $player_ap);
-					//return array('id'=>$player1_id, 'number'=>$player1_number);
+	return $result;
+	//return array('player_ap' => $player_ap);
+	//return array('id'=>$player1_id, 'number'=>$player1_number);
 }
 function match_hash($match){
 //match id: date, venue, league, grade, section, pa_id or pb_id, pc_id or pd_id
@@ -268,14 +254,13 @@ function match_hash($match){
 
 	return $result;
 }
-function import_matches( $array = array(), $columns = array( 'post_title' ) ) {
+function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 		$rows = array_chunk( $array, sizeof( $columns ) );
 
-	// Get event format, league, and season from post vars
-	$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
-	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
-	$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? false : $_POST['sp_season'] );
-	$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
+	$event_format = $this->nvl($event_meta['event_format'], false);;
+	$league = $this->nvl($event_meta['league'], -1);;
+	$season = $this->nvl($event_meta['season'], -1);
+	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
 
 	// Get labels from result and performance post types
 	$result_labels = sp_get_var_labels( 'sp_result' );
@@ -768,7 +753,13 @@ function importB( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$this->Trace('raw_import', $raw_import);
 	$this->Trace('file_import', $array);
-	$this->import_matches($raw_import, $columns);
+		$league = $annual_events['St Valentines']['league'];
+		$season = $seasons[0];
+		//$annual_events['St Valentines']['venue']
+		//$annual_events['St Valentines']['title']
+
+	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
+	$this->import_matches($raw_import, $event_meta, $columns);
 }
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
@@ -777,9 +768,15 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 		$this->footer();
 		die();
 	endif;
-
-	//$this->import_matches($array, $columns);
-	$this->importB($array, $columns);
+	// Get event format, league, and season from post vars
+	$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
+	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
+	$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? false : $_POST['sp_season'] );
+	$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
+	
+	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
+	//$this->import_matches($array, $event_meta, $columns);
+	$this->importB($array, $event_meta, $columns);
 
 			// Show Result
 			echo '<div class="updated settings-error below-h2"><p>
