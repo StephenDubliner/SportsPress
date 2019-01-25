@@ -616,35 +616,34 @@ function random_match_points_complete($format, $max){//number of games in a matc
 	$result = array();
 	$result_a = array();
 	$result_b = array();
-	if($format <3 ){
-		for($i = 0;$i < $format;$i++){
+	$awc = 0;
+	$bwc = 0;
+	if( $format <3 ){
+		for($i = 0;$i < $format; $i++){
 			$outcome = mt_rand(0, 1);
 			array_push($result_a, $this->random_game_points($outcome, 1, $max));
 			array_push($result_b, $this->random_game_points($outcome, 0, $max));
 		}
 	}
 	else if($format == 3 ){
-		$in_two_strait_games = mt_rand(0, 1);
-		if($in_two_strait_games){
+		for($i = 0;$i < 3; $i++){
 			$outcome = mt_rand(0, 1);
-			for($i = 0;$i < 2;$i++){
-				array_push($result_a, $this->random_game_points($outcome, 1, $max));
-				array_push($result_b, $this->random_game_points($outcome, 0, $max));
-			}
-		}
-		else{
-			$outcome = mt_rand(0, 1);
-			for($i = 0;$i < 3;$i++){
-				if($i==1){
-					$outcome = $outcome == 0?1:0;
-				}
-				array_push($result_a, $this->random_game_points($outcome, 1, $max));
-				array_push($result_b, $this->random_game_points($outcome, 0, $max));
-			}
+			array_push($result_a, $this->random_game_points($outcome, 1, $max));
+			array_push($result_b, $this->random_game_points($outcome, 0, $max));
+			$awc += $outcome == 1 ? 1 : 0;
+			$bwc += $outcome == 0 ? 1 : 0;
+			if($awc == 2 || $bwc == 2) break;
 		}
 	}
 	else if($format == 5 ){
-		//tbd
+		for($i = 0;$i < 3; $i++){
+			$outcome = mt_rand(0, 1);
+			array_push($result_a, $this->random_game_points($outcome, 1, $max));
+			array_push($result_b, $this->random_game_points($outcome, 0, $max));
+			$awc += $outcome == 1 ? 1 : 0;
+			$bwc += $outcome == 0 ? 1 : 0;
+			if($awc == 3 || $bwc == 3) break;
+		}
 	}
 
 	$result = array(0 => $result_a, 1 => $result_b);
