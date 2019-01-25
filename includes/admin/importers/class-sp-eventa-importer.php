@@ -595,15 +595,18 @@ function random_match_points($format, $max){//number of games in a match
 	$result = array();
 	$result_a = array();
 	$result_b = array();
-	$wc = 0;
+	$awc = 0;
+	$bwc = 0;
 	for($i = 0;$i < $format;$i++){
-		if(($format == 3 || $format == 5) && $wc == ($format -1))
-			break;
 		$outcome = mt_rand(0, 1);
 		array_push($result_a, $this->random_game_points($outcome, 1, $max));
 		array_push($result_b, $this->random_game_points($outcome, 0, $max));
 		$result = array(0 => $result_a, 1 => $result_b);
-		$wc = $wc + ($outcome == 1 ? 1 : 0);
+		$awc += $outcome == 1 ? 1 : 0;
+		$bwc += $outcome == 0 ? 1 : 0;
+		if($awc == 2 || $bwc == 2)
+			//($format == 3 || $format == 5) && $wc == ($format -1))
+			break;
 	}
 
 	return $result;
