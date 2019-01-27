@@ -35,6 +35,11 @@ class SP_Admin_Importers {
 				'description' => __( 'Import randomly generated <strong>events</strong>.', 'sportspress'),
 				'callback' => array( $this, 'events_importerA' ),
 			),
+			'sp_eventB_csv' => array(
+				'name' => __( 'SportsPress Badminton Events (CSV)', 'sportspress' ),
+				'description' => __( 'Import <strong>badminton events</strong> from a csv file.', 'sportspress'),
+				'callback' => array( $this, 'events_importerB' ),
+			),
 			'sp_event_csv' => array(
 				'name' => __( 'SportsPress Events (CSV)', 'sportspress' ),
 				'description' => __( 'Import <strong>events</strong> from a csv file.', 'sportspress'),
@@ -99,6 +104,20 @@ class SP_Admin_Importers {
 
 	    // Dispatch
 	    $importer = new SP_EventA_Importer();
+	    $importer->dispatch();
+	}
+
+	/**
+	 * Add menu item
+	 */
+	public function events_importerB() {
+		$this->includes();
+
+		//require 'importers/class-sp-eventa-importer.php';
+	    require 'importers/class-sp-eventb-importer.php';
+
+	    // Dispatch
+	    $importer = new SP_EventB_Importer();
 	    $importer->dispatch();
 	}
 

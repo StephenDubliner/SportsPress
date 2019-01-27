@@ -3,7 +3,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 if ( class_exists( 'WP_Importer' ) ) {
-	class SP_EventA_Importer extends SP_Importer {
+	class SP_EventB_Importer extends SP_Importer {
 
 		/**
 		 * __construct function.
@@ -12,8 +12,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 		 * @return void
 		 */
 		public function __construct() {
-			$this->import_page = 'sp_eventA_csv';
-			$this->import_label = __( 'Import randomly generated Events', 'sportspress' );
+			$this->import_page = 'sp_eventB_csv';
+			$this->import_label = __( 'Import previewed matches', 'sportspress' );
 			$this->columns = array(
 				'post_date' => __( 'Date', 'sportspress' ),
 				//'post_time' => __( 'Time', 'sportspress' ),
@@ -43,8 +43,16 @@ function teamNameFromPiped($input){
 	if($pa_name == '' && $pb_name == '')
 		return null;
 	$unknown_player = 'unknknown';
-
-	$result = $this->nvl($pa_name, $unknown_player) . ' with ' . $this->nvl($pb_name, $unknown_player); 
+	//if (trim($pa_name) != '' && trim($pb_name) != ''):
+		$result = $this->nvl($pa_name, $unknown_player) . ' with ' . $this->nvl($pb_name, $unknown_player); 
+	// elseif (trim($pa_name) != '' && trim($pb_name) == ''):
+	// 	$result =  $pa_name . ' with unknknown';
+	// elseif (trim($pa_name) == '' && trim($pb_name) != ''):
+	// 	$result =  $pb_name . ' with unknknown';
+	// elseif (trim($pa_name) == '' && trim($pb_name) == ''):
+	// else
+	// 	$result = 'unknknown team';
+	// endif;
 
 	return $result;
 }
@@ -105,6 +113,25 @@ function build_match($commonDetails, $rowA, $rowB){
 	$agw = 0;
 	$agl = 0;
 	foreach( $points_a as $gkey => $points ):
+		//if($points == null && $points_b[$gkey] == null)	continue;
+		// if($isFirstGame){
+		// 	$result['teams'][$taTitle]['results']['gw'] = $points > $points_b[$gkey] ? 1 : 0;
+		// 	$result['teams'][$taTitle]['results']['gl'] = $points < $points_b[$gkey] ? 1 : 0;
+
+		// 	$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
+		// 	$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
+		// 	$isFirstGame = false;
+		// }
+		// else{
+		// 	$result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] = $result['teams'][$taTitle]['results'][($points > $points_b[$gkey] ? 'gw' : 'gl')] + 1;
+		// }
+
+		// if($isFirstGame){
+		// 	$result['teams'][$taTitle]['results']['gw'] = 0;
+		// 	$result['teams'][$taTitle]['results']['gl'] = 0;
+		// 	$isFirstGame = false;
+		// }
+
 		if(intval($points) > intval($points_b[$gkey])){
 			$agw = $agw + 1;
 		}
@@ -165,8 +192,8 @@ function trace($label, $o){
 	//error_log('q'. print_r($wpdb->queries, true));
 }
 
-function link_player($player, $league, $season, $match_id, $team_id){
-$player1_name = $player['name'];
+function link_player($player1_name, $league, $season, $match_id, $team_id){
+
 	$player1_id = null;
 	$player1_number = null;
 	$result = array();
@@ -198,21 +225,10 @@ $this->Trace('new player',$player1_name);
 		update_post_meta( $player1_id, '_sp_import', 1 );
 
 		// Update number
-		update_post_meta( $player1_id, 'sp_number', $player1_id );
+		update_post_meta( $player1_id, 'sp_number', null );
 
 		// Get player number
-		$player1_number = $player1_id;
-
-		
-		update_post_meta( $player1_id, 'sp_metrics', 
-			array(
-				'grade' => $player['grade'], 
-				'pseudo' => 'abc', 
-				'bi' => $player1_id, 
-				'height' => mt_rand(159,205), 
-				'club' => mt_rand(0,1)?'SD':'DB', 
-				'playrorl' => mt_rand(0,1)?'R':'L',
-				'gender' => $player['gender'] ) );
+		$player1_number = null;
 
 	endif;
 
@@ -248,11 +264,15 @@ $this->Trace('new player',$player1_name);
 	if ( $match_id ):
 		add_post_meta( $match_id, 'sp_player', $player1_id );
 	endif;
+	//$aps= 0;//todo
 
+	//$result[ $player1_id ] = array('number' => $player1_number, 'ap'=> $aps);
 	endif;
 	$result = array('player_id' => $player1_id,'player_number' => $player1_number);
 
 	return $result;
+	//return array('player_ap' => $player_ap);
+	//return array('id'=>$player1_id, 'number'=>$player1_number);
 }
 function match_hash($match){
 //match id: date, venue, league, grade, section, pa_id or pb_id, pc_id or pd_id
@@ -270,7 +290,7 @@ function match_hash($match){
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 
 	$rows = array_chunk( $array, 8 );//sizeof( $columns )
-	$event_format = $this->nvl($event_meta['event_format'], 'league');;
+	$event_format = $this->nvl($event_meta['event_format'], false);;
 	$league = $this->nvl($event_meta['league'], -1);;
 	$season = $this->nvl($event_meta['season'], -1);
 	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
@@ -414,19 +434,8 @@ endif;
 
 //$this->Trace('team_match_data',$team_match_data);
 		list($player1_name, $player2_name) = $team_match_data['players'];
-		$p1m = array(
-			'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
-			'name' => $player1_name,
-			'grade' => $match['matchGrade']
-		);
-		$p2m = array(
-			'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
-			'name' => $player2_name,
-			'grade' => $match['matchGrade']
-		);
-		
-		$meta1 = $this->link_player($p1m, $league, $season, $match_id, $team_id);
-		$meta2 = $this->link_player($p2m, $league, $season, $match_id, $team_id);
+		$meta1 = $this->link_player($player1_name, $league, $season, $match_id, $team_id);
+		$meta2 = $this->link_player($player2_name, $league, $season, $match_id, $team_id);
 
 		$ap = (11 - $match['matchGrade']) * (
 		      $team_match_data['results']['gap'] 
@@ -440,8 +449,8 @@ endif;
 		elseif($team_match_data['outcomeLabel']=='Draw'):
 			$ap = $ap * 1.1;
 		endif;
-		$ap = intval($ap);
-		$k = array();
+
+		$k =array();
 		if($meta1['player_id'] != null):
 			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap);
 		endif;
@@ -451,12 +460,6 @@ endif;
 		endif;
 
 		$players[ $team_id ] = $k;
-
-		// update_post_meta( $meta1['player_id'], 'sp_statistics', $k[$meta1['player_id']] );
-		// update_post_meta( $meta2['player_id'], 'sp_statistics', $k[$meta2['player_id']] );
-		
-		//update_post_meta( 918, 'sp_players', $k[$meta1['player_id']] );
-		//update_post_meta( 918, 'sp_players', $k[$meta2['player_id']] );
 
 		// array(
 		// 	$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
@@ -476,39 +479,39 @@ endif;
 		// Add team results to existing results
 		$event_results[ $team_id ] = $team_match_data['results'];//$team_results;
 
-		$outcome_slug = null;
-		$outcome = $team_match_data['outcomeLabel'];
-		$this->Trace('team_name', $team_name);
-		$this->Trace('outcomeLabel', $outcome);
+	$outcome_slug = null;
+	$outcome = $team_match_data['outcomeLabel'];
+	$this->Trace('team_name', $team_name);
+	$this->Trace('outcomeLabel', $outcome);
 		
 
-		// Get or insert outcome
-		$outcome_object = get_page_by_title( stripslashes( $outcome ), OBJECT, 'sp_outcome' );
+							// Get or insert outcome
+							$outcome_object = get_page_by_title( stripslashes( $outcome ), OBJECT, 'sp_outcome' );
 
-		if ( $outcome_object ):
+							if ( $outcome_object ):
 
-			// Make sure outcome is published
-			if ( $outcome_object->post_status != 'publish' ):
-				wp_update_post( array( 'ID' => $outcome_object->ID, 'post_status' => 'publish' ) );
-			endif;
+								// Make sure outcome is published
+								if ( $outcome_object->post_status != 'publish' ):
+									wp_update_post( array( 'ID' => $outcome_object->ID, 'post_status' => 'publish' ) );
+								endif;
 
-			// Get outcome slug
-			$outcome_slug = $outcome_object->post_name;
+								// Get outcome slug
+								$outcome_slug = $outcome_object->post_name;
 
-		else:
+							else:
 
-			// Insert outcome
-			$outcome_id = wp_insert_post( array( 'post_type' => 'sp_outcome', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $outcome ) ) );
+								// Insert outcome
+								$outcome_id = wp_insert_post( array( 'post_type' => 'sp_outcome', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $outcome ) ) );
 
-			// Get outcome slug
-		    $post_data = get_post( $outcome_id, ARRAY_A );
-		    $outcome_slug = $post_data['post_name'];
+								// Get outcome slug
+							    $post_data = get_post( $outcome_id, ARRAY_A );
+							    $outcome_slug = $post_data['post_name'];
 
-			// Flag as import
-			update_post_meta( $outcome_id, '_sp_import', 1 );
+								// Flag as import
+								update_post_meta( $outcome_id, '_sp_import', 1 );
 
-		endif;
-		$event_results[ $team_id ][ 'outcome' ][] = $outcome_slug;
+							endif;
+							$event_results[ $team_id ][ 'outcome' ][] = $outcome_slug;
 		// Update event results
 		update_post_meta( $match_id, 'sp_results', $event_results );
 		
@@ -815,9 +818,9 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 	
 	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
 	$this->delete_all_of_type();
-	//$this->import_matches($array, $event_meta, $columns);
+	$this->import_matches($array, $event_meta, $columns);
 	
-	$this->importA($array, $event_meta, $columns);
+	//$this->importA($array, $event_meta, $columns);
 
 	// Show Result
 	echo '<div class="updated settings-error below-h2"><p>
@@ -850,7 +853,9 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 			echo '<p>' . __( 'Hi there! Choose a .csv file to upload, then click "Upload file and import".', 'sportspress' ).'</p>';
 			echo '<p>' . sprintf( __( 'Events need to be defined with columns in a specific order (3+ columns). <a href="%s">Click here to download a sample</a>.', 'sportspress' ), plugin_dir_url( SP_PLUGIN_FILE ) . 'dummy-data/events-sample.csv' ) . '</p>';
 			//$this->wp_trigger_import( 'admin.php?import=sp_eventA_csv&step=1' );
-			$this->import();
+			//$this->import();
+			wp_import_upload_form( 'admin.php?import=sp_eventB_csv&step=1' );
+			echo '</div>';
 		}
 
 
