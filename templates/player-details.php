@@ -43,8 +43,9 @@ if ( $show_number ):
 endif;
 
 if ( $show_name ):
-
-	$common[ __( 'Name', 'sportspress' ) ] = $metrics_before['pseudo'];// $player->post->post_title;
+//error_log("metrics_after:" . var_export($metrics_after, true));
+//error_log("metrics_before:" . var_export($metrics_before, true));
+	$common[ __( 'Name', 'sportspress' ) ] = $metrics_after['usepseudo'] == 'Y' ? 'hidden' : $player->post->post_title;// $player->post->post_title; $metrics_after['Pseudo']
 endif;
 
 if ( $show_nationality ):

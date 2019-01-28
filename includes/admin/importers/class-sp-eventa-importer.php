@@ -32,10 +32,14 @@ if ( class_exists( 'WP_Importer' ) ) {
 		}
 
 function teamNameFromPiped($input){
+	$two_players = explode( '|', $input );
+	return $this->teamName($two_players);
+}
+function teamName($two_players = array()){
 	$pa_name = null; 
 	$pb_name = null;
-	$result = null; //'unknown';
-	$two_players = explode( '|', $input );
+	$result = null;
+
 	sort($two_players);
 	list($pa_name, $pb_name) = $two_players;
 	$pa_name = trim($pa_name);
@@ -47,7 +51,7 @@ function teamNameFromPiped($input){
 	$result = $this->nvl($pa_name, $unknown_player) . ' with ' . $this->nvl($pb_name, $unknown_player); 
 
 	return $result;
-}
+	}
 function nvl($val, $replace)
 {
     if( is_null($val) || $val === '' )  return $replace;
@@ -91,14 +95,30 @@ function build_match($commonDetails, $rowA, $rowB){
 	$tbTitle = $this->teamNameFromPiped($rowB[0]);
 	if($taTitle == null || $tbTitle == null)
 	{
-		$this->Trace('rowA',$rowA);
-		$this->Trace('rowB',$rowB);
+		$this->Trace('rowA', $rowA);
+		$this->Trace('rowB', $rowB);
 		return null;
 	}
+	$result['teams'][$taTitle]['title'] = $taTitle;
+	$result['teams'][$tbTitle]['title'] = $tbTitle;
 
 	$isFirstGame = true;
 	$result['teams'][$taTitle]['results'] = array();
 	$result['teams'][$tbTitle]['results'] = array();
+
+	$result['teams'][$taTitle]['results']['taTitle'] = $taTitle;
+	$result['teams'][$tbTitle]['results']['tbTitle'] = $tbTitle;
+
+	$two_players_a = explode( '|', $rowA[0] );
+	$two_players_b = explode( '|', $rowB[0] );
+	$result['teams'][$taTitle]['players_o'] = array( 
+		0 => array('title' => $two_players_a[0]),
+		1 => array('title' => $two_players_a[1]),
+	);
+	$result['teams'][$tbTitle]['players_o'] = array( 
+		0 => array('title' => $two_players_b[0]),
+		1 => array('title' => $two_players_b[1]),
+	);
 
 	$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
 	$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
@@ -166,8 +186,8 @@ function trace($label, $o){
 }
 
 function link_player($player, $league, $season, $match_id, $team_id){
-$player1_name = $player['name'];
-$pseudo = 'PS-' . $player1_name;
+$player1_name = $player['usepseudo'] == 'Y' ? $this->nvl($player['pseudo'], $player['name']) : $player['name'];
+$pseudo = $player['pseudo'];//'PS-' . $player1_name;
 	$player1_id = null;
 	$player1_number = null;
 	$result = array();
@@ -203,7 +223,10 @@ wp_strip_all_tags( $player1_name );
 
 		// Update number
 		update_post_meta( $player1_id, 'sp_number', $player1_id );
-		update_post_meta( $player1_id, 'sp_nationality', mt_rand(0,1)?'irl':'fra' );
+		update_post_meta( $player1_id, 'sp_nationality', array_rand(
+			//array('irl', 'fra', 'usa', 'ita', 'ger')
+			SP()->countries->countries
+			, 1));
 
 		// Get player number
 		$player1_number = $player1_id;
@@ -212,7 +235,7 @@ wp_strip_all_tags( $player1_name );
 			array(
 				'grade' => $player['grade'], 
 				'pseudo' => $pseudo, 
-				'usepseudo' => mt_rand(0,1) ? 'Y' : null,
+				'usepseudo' => $player['usepseudo'],
 				'bi' => $player1_id, 
 				'height' => mt_rand(159,205), 
 				'club' => mt_rand(0,1)?'SD':'DB', 
@@ -272,6 +295,297 @@ function match_hash($match){
 	. $tb;
 
 	return $result;
+}
+function player_meta($match, $player1_name){
+	return array(
+	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
+	'name' => $player1_name,
+	'pseudo' => 'PS-'.$player1_name,
+	'usepseudo' => mt_rand(0, 1) ? 'Y': null,
+	'grade' => $match['matchGrade']
+);
+}
+function import_matches_r( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
+	$rows = array_chunk( $array, 8 );//sizeof( $columns )
+	$event_format = $this->nvl($event_meta['event_format'], 'league');;
+	$league = $this->nvl($event_meta['league'], -1);;
+	$season = $this->nvl($event_meta['season'], -1);
+	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
+
+	// Get labels from result and performance post types
+	$result_labels = sp_get_var_labels( 'sp_result' );
+	$performance_labels = sp_get_var_labels( 'sp_performance' );
+
+	//tbd
+	$matchImportIdx = 0;
+	$importSize = sizeof($rows);
+	//if($importSize%2 <> 0)
+	//exit();
+	$import_data = array();
+	$matches = array();
+	$teamaName = $teambName = null;
+	while ( $matchImportIdx < $importSize ):
+
+	$row_check = array_filter( $rows[$matchImportIdx] );
+
+	if ( !empty( $row_check ) ) {
+		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
+		$rowA = array_slice( $rows[$matchImportIdx], 4);
+		$rowB = array_slice( $rows[$matchImportIdx+1], 4);
+		$match = $this->build_match($commonDetails, $rowA, $rowB);
+		if($match != null)
+			array_push ($matches, $match);
+		//array_push ($matches, $this->build_random_match());
+	}
+	$matchImportIdx += 2;
+	endwhile;
+	$mc = sizeof($matches);
+	$this->Trace('processing matches', $mc);
+
+	$import_data['season'] = $season;
+	$import_data['league'] = $league;
+	$import_data['event_format'] = $event_format;
+	$import_data['date_format'] = $date_format;
+	$import_data['matches'] = array();
+	foreach ( $matches as $match ):
+		// $match_r = array();
+		// $match_r['matchDate'] = $match['matchDate'];
+		// $match_r['venue'] = $match['venue'];
+		// $match_r['matchSection'] = $match['matchSection'];
+		// $match_r['matchGrade'] = $match['matchGrade'];
+		// //$match_r['format'] = $match[''];
+		// $match_r['teams'] = $match['teams'];
+		$import_data['matches'] = array_merge($import_data['matches'], array( $this->match_hash($match) => $match));
+	endforeach;
+
+	//upsert input data from $import_data
+	$this->commit_import($import_data);
+}
+function upsert_match($match, $event_format, $league, $season){
+		$match_check = array_filter( $match );
+		if ( empty( $match_check ) ) return null;
+		$match_hash = $this->match_hash($match);
+		//$this->Trace('match_hash', $match_hash);
+
+		global $post;
+		$cc_args = array(
+		    'posts_per_page'   => -1,
+		    'post_type'        => 'sp_event',
+		    'post_status' 	   => 'publish',
+		    'meta_key'         => 'sp_event_hash',
+		    'meta_value'       => $match_hash
+		);
+		$events_q = new WP_Query( $cc_args );
+
+		$match_id = null;
+
+//$this->delete_all_post_to_delete(-1);
+
+		if($events_q->have_posts()):
+			$events_q->the_post();
+			$match_id = $post->ID;
+
+			//$this->Trace('ev', $post);
+			$this->Trace('match skipped', $match_hash);
+			$this->skipped++;
+			return null;
+		else:
+			$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $date, 'post_title' => $match['matchTitle'] );
+
+			// Insert event
+			$match_id = wp_insert_post( $args );
+			$this->Trace('match_id created', $match_id);
+			update_post_meta( $match_id, 'sp_event_hash', $match_hash );
+		endif;
+	//$this->Trace('match', $match);
+	//$this->Trace('match_hash', $match_hash);
+	// Define post type args
+
+
+	// Flag as import
+	update_post_meta( $match_id, '_sp_import', 1 );
+
+	// Update event format
+	if ( $event_format ):
+		update_post_meta( $match_id, 'sp_format', $event_format );
+	endif;
+
+	// Update league
+	if ( $league ):
+		wp_set_object_terms( $match_id, $league, 'sp_league', false );
+	endif;
+
+	// Update season
+	if ( $season ):
+		wp_set_object_terms( $match_id, $season, 'sp_season', false );
+	endif;
+	return $match_id;
+}
+function player_upsert(&$player){
+	$player_title = $player['title'];
+	$player_obj = get_page_by_title( stripslashes( $player_title ), OBJECT, 'sp_player' );
+	$player_id = null;
+	$player_number = null;
+	// Get or insert player
+	if ( $player1_object ):
+		// Make sure player is published
+		if ( $player_object->post_status != 'publish' ):
+			wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
+		endif;
+
+		$player_id = $player1_object->ID;
+		$player_number = get_post_meta( $player_id, 'sp_number', true );
+	else:
+		// Insert player
+		$post_title = wp_strip_all_tags( $player_title );
+		$player_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => $post_title) );
+
+		// Flag as import
+		update_post_meta( $player_id, '_sp_import', 1 );
+
+		// Update number
+		update_post_meta( $player_id, 'sp_number', $player_id );
+		if($player['nationality'] != '')
+			update_post_meta( $player_id, 'sp_nationality', $player['nationality']);
+
+		update_post_meta( $player_id, 'sp_metrics', 
+			array(
+				'grade' => $player['grade'],
+				'pseudo' => $player['pseudo'],
+				'usepseudo' => $player['usepseudo'],
+				'bi' => $player['bi'],
+				'height' => $player['height'],
+				'club' => $player['club'],
+				'playrorl' => $player['playrorl'],
+				'gender' => $player['gender']
+				 ) );
+
+	endif;
+	$player['id'] = $player_id;
+}
+function team_upsert(&$team_data){
+	$team_name = $team_data['title'];
+	$team_object = get_page_by_title( stripslashes( $team_name ), OBJECT, 'sp_team' );
+
+	$team_id = null;
+	if ( $team_object ):
+		// Make sure team is published
+		if ( $team_object->post_status != 'publish' ):
+			wp_update_post( array( 'ID' => $team_object->ID, 'post_status' => 'publish' ) );
+		endif;
+
+		$team_id = $team_object->ID;
+	else:
+		// Insert team
+		$team_id = wp_insert_post( array( 'post_type' => 'sp_team', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $team_name ) ) );
+
+		// Flag as import
+		update_post_meta( $team_id, '_sp_import', 1 );
+	endif;
+	$team_data['id'] = $team_id;
+}
+function match_upsert(&$match){
+	// $match_check = array_filter( $match );
+	// if ( empty( $match_check ) ) continue;
+	$match_hash = $this->match_hash($match);
+	//$this->Trace('match_hash', $match_hash);
+
+	global $post;
+	$cc_args = array(
+	    'posts_per_page'   => -1,
+	    'post_type'        => 'sp_event',
+	    'post_status' 	   => 'publish',
+	    'meta_key'         => 'sp_event_hash',
+	    'meta_value'       => $match_hash
+	);
+	$events_q = new WP_Query( $cc_args );
+
+	$match_id = null;
+	if($events_q->have_posts()):
+		$events_q->the_post();
+		$match_id = $post->ID;
+
+		//$this->Trace('ev', $post);
+		$this->Trace('match skipped', $match_hash);
+		$this->skipped++;
+		return null;
+	else:
+		$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $match['matchDate'], 'post_title' => $match['matchTitle'] );
+
+		// Insert event
+		$match_id = wp_insert_post( $args );
+		$this->Trace('match_id created', $match_id);
+		update_post_meta( $match_id, 'sp_event_hash', $match_hash );
+	endif;
+
+	// Flag as import
+	update_post_meta( $match_id, '_sp_import', 1 );
+
+		// Update event format
+	if ( $match['event_format'] ):
+		update_post_meta( $match_id, 'sp_format', $match['event_format'] );
+	endif;
+
+	// Update league
+	if ( $match['league'] ):
+		wp_set_object_terms( $match_id, $match['league'], 'sp_league', false );
+	endif;
+
+	// Update season
+	if ( $match['season'] ):
+		wp_set_object_terms( $match_id, $match['season'], 'sp_season', false );
+	endif;
+
+	// Update venue
+	if ( $match['venue'] ):
+		wp_set_object_terms( $match_id, $match['venue'], 'sp_venue', false );
+	endif;
+	$match['id'] = $match_id;
+}
+
+function commit_import($import_data = array()){
+	//players
+	$this->Trace('import_data', $import_data);
+	$league = $import_data['league'];
+	$season = $import_data['season'];
+	foreach ($import_data['matches'] as $match_hash => $match) {
+		foreach ($match['teams'] as $team_hash => $team_match) {
+			foreach ($team_match['players_o'] as $player_key => $player_value) {
+				//array_push($team_match['players_merged'], $this->player_upsert($player_value));
+				$this->player_upsert($player_value);
+			}
+
+			//array_push($team_match['team_merged'], $this->team_upsert($team_match['players_merged']));
+			//$team_match['title'] = $team_hash;
+			$this->team_upsert($team_match);
+			$team_id = $team_match['id'];
+
+			// Update league
+			if ( $league ):
+				wp_set_object_terms( $team_id, $league, 'sp_league', true );
+			endif;
+
+			// Update season
+			if ( $season ):
+				wp_set_object_terms( $team_id, $season, 'sp_season', true );
+			endif;
+		}
+		//upsert match + results + players 				//$team_match['outcomeLabel']
+		//$match_id = $this->match_upsert($team_match['results']);
+		//link players, temas, outcome
+		$this->match_upsert($match);
+		$match_id = $match['id'];
+		foreach ($match['teams'] as $team_hash => $team_match) {
+			$team_id = $team_match['id'];
+			if ( isset( $match_id ) && isset( $team_id )):
+				// Add team to event
+				add_post_meta( $match_id, 'sp_team', $team_id );
+				
+				// Add empty player to event
+				add_post_meta( $match_id, 'sp_player', 0 );
+			endif;
+		}
+	}
 }
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 
@@ -374,7 +688,11 @@ endif;
 
 	$players = array();
 	foreach ( $match['teams'] as $team_name => $team_match_data ):
+		//build player dtos 
 
+		//build team dto
+
+		//$team_name_actual =  $this->teamName($team_match_data['players']);
 		// Find out if team exists
 		$team_object = get_page_by_title( stripslashes( $team_name ), OBJECT, 'sp_team' );
 
@@ -420,16 +738,25 @@ endif;
 
 //$this->Trace('team_match_data',$team_match_data);
 		list($player1_name, $player2_name) = $team_match_data['players'];
-		$p1m = array(
-			'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
-			'name' => $player1_name,
-			'grade' => $match['matchGrade']
-		);
-		$p2m = array(
-			'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
-			'name' => $player2_name,
-			'grade' => $match['matchGrade']
-		);
+		$p1m = $this->player_meta($match, $player1_name);
+		$p2m = $this->player_meta($match, $player2_name);
+
+		// $match['taTitle'] = $this=>teamName($match['players']);
+		// $match['tbTitle'] = $this=>teamName($match['players']);
+		//  array(
+		// 	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
+		// 	'name' => $player1_name,
+		// 	'pseudo' => 'PS-'.$player1_name,
+		// 	'usepseudo' => mt_rand(0, 1) ? 'Y': null,
+		// 	'grade' => $match['matchGrade']
+		// );
+		// $p2m = array(
+		// 	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
+		// 	'name' => $player2_name,
+		// 	'pseudo' => 'PS-'.$player2_name,
+		// 	'usepseudo' => mt_rand(0, 1) ? 'Y': null,
+		// 	'grade' => $match['matchGrade']
+		// );
 		
 		$meta1 = $this->link_player($p1m, $league, $season, $match_id, $team_id);
 		$meta2 = $this->link_player($p2m, $league, $season, $match_id, $team_id);
@@ -552,14 +879,22 @@ function random_grade(){
 function random_player($gender, $grade, $id){
 	$firstname = $this->randome_name($gender);
 	$lastname = $this->randome_surname();
+	$fullname = "$firstname $lastname";
 	return array(
 		'firstname' => $firstname,
 		'lastname' => $lastname,
-		'name' => "$firstname $lastname",
+		'name' => $fullname,
 		'gender' => $gender,
 		'grade' => $grade,
 		'rl' => (mt_rand(0,1) == 0 ? 'R' : 'L'),
-		'id' => $id
+		'id' => $id,
+		'pseudo' => 'aka ' . $fullname, 
+		'usepseudo' => mt_rand(0,1)?'Y':null,
+		'bi' => $id, 
+		'height' => mt_rand(159,205),
+		'club' => mt_rand(0,1)?'SD':'DB', 
+		'playrorl' => mt_rand(0,1)?'R':'L',
+		'nationality' => array_rand(SP()->countries->countries, 1)
 	);
 }
 function random_players(){
@@ -804,7 +1139,8 @@ function importA( $array = array(), $columns = array( 'post_title' ) ) {
 		//$annual_events['St Valentines']['title']
 
 	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
-	$this->import_matches($raw_import, $event_meta, $columns);
+	//$this->import_matches($raw_import, $event_meta, $columns);
+	$this->import_matches_r($raw_import, $event_meta, $columns);
 }
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
@@ -822,7 +1158,7 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
 	$this->delete_all_of_type();
 	//$this->import_matches($array, $event_meta, $columns);
-	
+
 	$this->importA($array, $event_meta, $columns);
 
 	// Show Result
