@@ -540,6 +540,11 @@ function match_upsert(&$match){
 	if ( $match['venue'] ):
 		wp_set_object_terms( $match_id, $match['venue'], 'sp_venue', false );
 	endif;
+
+	update_post_meta( $match_id, 'sp_specs', array(
+		'grade' => $match['matchGrade'], 
+		'section' => $match['matchSection'] ));
+
 	$match['id'] = $match_id;
 }
 
@@ -549,16 +554,86 @@ function commit_import($import_data = array()){
 	$league = $import_data['league'];
 	$season = $import_data['season'];
 	foreach ($import_data['matches'] as $match_hash => $match) {
+		$this->match_upsert($match);
+		$match_id = $match['id'];
+		$event_results = array();
+		$players_aps = array();
 		foreach ($match['teams'] as $team_hash => $team_match) {
-			foreach ($team_match['players_o'] as $player_key => $player_value) {
-				//array_push($team_match['players_merged'], $this->player_upsert($player_value));
-				$this->player_upsert($player_value);
-			}
-
 			//array_push($team_match['team_merged'], $this->team_upsert($team_match['players_merged']));
 			//$team_match['title'] = $team_hash;
 			$this->team_upsert($team_match);
 			$team_id = $team_match['id'];
+
+			$this->Trace('match_id',$match_id);
+			$this->Trace('team_id',$team_id);
+
+			// Update event results
+			//$event_results = array();
+			$event_results[$team_id] = $team_match['results'];
+
+
+
+			if ( isset( $match_id ) && isset( $team_id )):
+				// Add team to event
+				add_post_meta( $match_id, 'sp_team', $team_id );
+				
+				// Add empty player to event
+				add_post_meta( $match_id, 'sp_player', 0 );
+			endif;
+
+			foreach ($team_match['players_o'] as $player_key => $player_value) {
+				//array_push($team_match['players_merged'], $this->player_upsert($player_value));
+				$this->player_upsert($player_value);
+				$player_id = $player_value['id'];
+
+				// Update league
+				if ( $league ):
+					wp_set_object_terms( $player_id, $league, 'sp_league', true );
+				endif;
+
+				// Update season
+				if ( $season ):
+					wp_set_object_terms( $player_id, $season, 'sp_season', true );
+				endif;
+
+				// Get player teams
+				$player_teams = get_post_meta( $player_id, 'sp_team', false );
+				$current_team = get_post_meta( $player_id, 'sp_current_team', true );
+				$past_teams = get_post_meta( $player_id, 'sp_past_team', false );
+
+				// Add team if not exists in player
+				if ( ! in_array( $team_id, $player_teams ) ):
+					add_post_meta( $player_id, 'sp_team', $team_id );
+				endif;
+
+				// Add as past team or set current team if not set
+				if ( ! $current_team ):
+					update_post_meta( $player_id, 'sp_current_team', $team_id );
+				elseif ( $current_team != $team_id && ! in_array( $team_id, $past_teams ) ):
+					add_post_meta( $player_id, 'sp_past_team', $team_id );
+				endif;
+				
+				if ( $match_id ):
+					add_post_meta( $match_id, 'sp_player', $player_id );
+				endif;
+///$player_value['player_number']
+
+				$ap = (11 - $match['matchGrade']) * (
+				      $team_match['results']['gap'] 
+					+ $team_match['results']['gbp'] //* 100 
+					+ $team_match['results']['gcp'] //* 10000
+					+ $team_match['results']['gdp']
+					+ $team_match['results']['gep']
+					) / 2;
+				if($team_match['outcomeLabel']=='Won'):
+					$ap = $ap * 1.4;
+				elseif($team_match['outcomeLabel']=='Draw'):
+					$ap = $ap * 1.1;
+				endif;
+				$ap = intval($ap);
+
+				$players_aps[$team_id][$player_id] = array('number' => $player_id, 'ap'=> $ap);
+			}
 
 			// Update league
 			if ( $league ):
@@ -569,22 +644,17 @@ function commit_import($import_data = array()){
 			if ( $season ):
 				wp_set_object_terms( $team_id, $season, 'sp_season', true );
 			endif;
+
+			//link player
 		}
+		update_post_meta( $match_id, 'sp_results', $event_results );
+
+		update_post_meta( $match_id, 'sp_players', $players_aps );
 		//upsert match + results + players 				//$team_match['outcomeLabel']
 		//$match_id = $this->match_upsert($team_match['results']);
 		//link players, temas, outcome
-		$this->match_upsert($match);
-		$match_id = $match['id'];
-		foreach ($match['teams'] as $team_hash => $team_match) {
-			$team_id = $team_match['id'];
-			if ( isset( $match_id ) && isset( $team_id )):
-				// Add team to event
-				add_post_meta( $match_id, 'sp_team', $team_id );
-				
-				// Add empty player to event
-				add_post_meta( $match_id, 'sp_player', 0 );
-			endif;
-		}
+
+
 	}
 }
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
