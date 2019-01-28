@@ -167,6 +167,7 @@ function trace($label, $o){
 
 function link_player($player, $league, $season, $match_id, $team_id){
 $player1_name = $player['name'];
+$pseudo = 'PS-' . $player1_name;
 	$player1_id = null;
 	$player1_number = null;
 	$result = array();
@@ -192,27 +193,32 @@ $this->Trace('id',$player1_id);
 	else:
 $this->Trace('new player',$player1_name);
 		// Insert player
-		$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => wp_strip_all_tags( $player1_name ) ) );
+$post_title = 
+//wp_strip_all_tags($pseudo);
+wp_strip_all_tags( $player1_name );
+		$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => $post_title) );
 
 		// Flag as import
 		update_post_meta( $player1_id, '_sp_import', 1 );
 
 		// Update number
 		update_post_meta( $player1_id, 'sp_number', $player1_id );
+		update_post_meta( $player1_id, 'sp_nationality', mt_rand(0,1)?'irl':'fra' );
 
 		// Get player number
 		$player1_number = $player1_id;
-
 		
 		update_post_meta( $player1_id, 'sp_metrics', 
 			array(
 				'grade' => $player['grade'], 
-				'pseudo' => 'abc', 
+				'pseudo' => $pseudo, 
+				'usepseudo' => mt_rand(0,1) ? 'Y' : null,
 				'bi' => $player1_id, 
 				'height' => mt_rand(159,205), 
 				'club' => mt_rand(0,1)?'SD':'DB', 
 				'playrorl' => mt_rand(0,1)?'R':'L',
-				'gender' => $player['gender'] ) );
+				'gender' => $player['gender']
+				 ) );
 
 	endif;
 

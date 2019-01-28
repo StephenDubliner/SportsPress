@@ -690,7 +690,7 @@ class SP_Player_List extends SP_Secondary_Post {
 				$player_data['number'] = get_post_meta( $player_id, 'sp_number', true );
 			endif;
 			
-			$player_data['name'] = get_the_title( $player_id );
+			$player_data['name'] = get_the_title( $player_id );//$player_data['pseudo'];
 			
 			if ( in_array( 'team', $this->columns ) ):
 				$player_data['team'] = get_post_meta( $player_id, 'sp_team', true );
@@ -732,7 +732,7 @@ class SP_Player_List extends SP_Secondary_Post {
 				$data[ $key ] = $tempdata[ $key ];
 			}
 		endforeach;
-		
+
 		if ( $admin ):
 
 			// Convert to time notation
@@ -818,6 +818,7 @@ class SP_Player_List extends SP_Secondary_Post {
 			}
 
 			$merged[0] = array_merge( $labels, $columns );
+//error_log("merged:" . var_export($merged, true));
 			return $merged;
 		endif;
 	}

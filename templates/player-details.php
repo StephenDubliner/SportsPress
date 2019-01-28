@@ -43,7 +43,8 @@ if ( $show_number ):
 endif;
 
 if ( $show_name ):
-	$common[ __( 'Name', 'sportspress' ) ] = $player->post->post_title;
+
+	$common[ __( 'Name', 'sportspress' ) ] = $metrics_before['pseudo'];// $player->post->post_title;
 endif;
 
 if ( $show_nationality ):

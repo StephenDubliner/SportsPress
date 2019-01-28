@@ -167,7 +167,12 @@ foreach ( $groups as $group ):
 
 		if ( isset( $limit ) && $i >= $limit ) continue;
 
+		$use_pseudo = sp_array_value( $row, 'usepseudo', null );
+
+		$pseudo = sp_array_value( $row, 'pseudo', null );
 		$name = sp_array_value( $row, 'name', null );
+		
+		$name = $use_pseudo == 'Y' ? $pseudo : $name;
 		if ( ! $name ) continue;
 
 		$tbody .= '<tr class="' . ( $i % 2 == 0 ? 'odd' : 'even' ) . '">';
