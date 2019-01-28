@@ -510,7 +510,7 @@ function match_upsert(&$match){
 		$this->skipped++;
 		return null;
 	else:
-		$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $match['matchDate'], 'post_title' => $match['matchTitle'] );
+		$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => null, 'post_title' => $match['matchTitle'] );
 
 		// Insert event
 		$match_id = wp_insert_post( $args );
@@ -545,12 +545,13 @@ function match_upsert(&$match){
 		'grade' => $match['matchGrade'], 
 		'section' => $match['matchSection'] ));
 
+	update_post_meta( $match_id, 'sp_day', $match['matchDate'] );
 	$match['id'] = $match_id;
 }
 
 function commit_import($import_data = array()){
 	//players
-	$this->Trace('import_data', $import_data);
+	//$this->Trace('import_data', $import_data);
 	$league = $import_data['league'];
 	$season = $import_data['season'];
 	foreach ($import_data['matches'] as $match_hash => $match) {
@@ -564,15 +565,31 @@ function commit_import($import_data = array()){
 			$this->team_upsert($team_match);
 			$team_id = $team_match['id'];
 
-			$this->Trace('match_id',$match_id);
-			$this->Trace('team_id',$team_id);
+			// $this->Trace('match_id',$match_id);
+			// $this->Trace('team_id',$team_id);
 
 			// Update event results
 			//$event_results = array();
 			$event_results[$team_id] = $team_match['results'];
+			$outcome_object = get_page_by_title( stripslashes( $outcome ), OBJECT, 'sp_outcome' );
 
 
+			$outcome = $team_match['outcomeLabel'];
+			// Get or insert outcome
+			$outcome_object = get_page_by_title( stripslashes( $outcome ), OBJECT, 'sp_outcome' );
+			$outcome_slug = null;
+			if ( $outcome_object ):
 
+				// Make sure outcome is published
+				if ( $outcome_object->post_status != 'publish' ):
+					wp_update_post( array( 'ID' => $outcome_object->ID, 'post_status' => 'publish' ) );
+				endif;
+
+				// Get outcome slug
+				$outcome_slug = $outcome_object->post_name;
+				$event_results[ $team_id ][ 'outcome' ][] = $outcome_slug;
+
+			endif;
 			if ( isset( $match_id ) && isset( $team_id )):
 				// Add team to event
 				add_post_meta( $match_id, 'sp_team', $team_id );
@@ -616,7 +633,6 @@ function commit_import($import_data = array()){
 				if ( $match_id ):
 					add_post_meta( $match_id, 'sp_player', $player_id );
 				endif;
-///$player_value['player_number']
 
 				$ap = (11 - $match['matchGrade']) * (
 				      $team_match['results']['gap'] 
@@ -647,14 +663,9 @@ function commit_import($import_data = array()){
 
 			//link player
 		}
+
 		update_post_meta( $match_id, 'sp_results', $event_results );
-
 		update_post_meta( $match_id, 'sp_players', $players_aps );
-		//upsert match + results + players 				//$team_match['outcomeLabel']
-		//$match_id = $this->match_upsert($team_match['results']);
-		//link players, temas, outcome
-
-
 	}
 }
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
@@ -1114,7 +1125,7 @@ function match_points_imploded($format, $max){
 	array_push($result, implode ('|' , $points[1]));
 	return $result;
 }
-function importA( $array = array(), $columns = array( 'post_title' ) ) {
+function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$annual_events = array(
 	'St Valentines' => array(
@@ -1229,7 +1240,7 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->delete_all_of_type();
 	//$this->import_matches($array, $event_meta, $columns);
 
-	$this->importA($array, $event_meta, $columns);
+	$this->import_auto_gen($array, $event_meta, $columns);
 
 	// Show Result
 	echo '<div class="updated settings-error below-h2"><p>
