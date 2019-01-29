@@ -153,8 +153,8 @@ function build_match($commonDetails, $rowA, $rowB){
 	$result['teams'][$taTitle]['results']['gw'] = $agw;
 	$result['teams'][$taTitle]['results']['gl'] = $agl;
 
-	$result['teams'][$tbTitle]['results']['gw'] = $result['teams'][$taTitle]['results']['gl'];
-	$result['teams'][$tbTitle]['results']['gl'] = $result['teams'][$taTitle]['results']['gw'];
+	$result['teams'][$tbTitle]['results']['gw'] = $agl;
+	$result['teams'][$tbTitle]['results']['gl'] = $agw;
 
 //$this->Trace($taTitle.' gw', $result['teams'][$taTitle]['results']);
 //$this->Trace($tbTitle.' gw', $result['teams'][$tbTitle]['results']);
@@ -419,6 +419,8 @@ function upsert_match($match, $event_format, $league, $season){
 	if ( $season ):
 		wp_set_object_terms( $match_id, $season, 'sp_season', false );
 	endif;
+
+	update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
 	return $match_id;
 }
 function player_upsert(&$player){
@@ -666,6 +668,7 @@ function commit_import($import_data = array()){
 
 		update_post_meta( $match_id, 'sp_results', $event_results );
 		update_post_meta( $match_id, 'sp_players', $players_aps );
+		update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
 	}
 }
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
@@ -1128,9 +1131,9 @@ function match_points_imploded($format, $max){
 function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$annual_events = array(
-	'St Valentines' => array(
-		'title'=>'St Valentines', 
-		'date'=>'2016/12/29', 
+	'Christmas Bonanza' => array(
+		'title'=>'Christmas Bonanza', 
+		'date'=>'2018/12/29', 
 		'league'=>'Bonanza', 
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
@@ -1139,7 +1142,7 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'sections'=>array('XD')),//, 'MD', 'WD'
 	//more
 	);
-	$seasons = array(2016);//, 2017, 2018
+	$seasons = array(2018);//, 2017, 2018
 	$all_players = $this->random_players();
 	$teams_in_alltimes = array();
 
@@ -1214,14 +1217,14 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$this->Trace('raw_import', $raw_import);
 	$this->Trace('file_import', $array);
-		$league = $annual_events['St Valentines']['league'];
+		$league = $annual_events['Christmas Bonanza']['league'];
 		$season = $seasons[0];
-		//$annual_events['St Valentines']['venue']
-		//$annual_events['St Valentines']['title']
+		//$annual_events['Christmas Bonanza']['venue']
+		//$annual_events['Christmas Bonanza']['title']
 
-	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
-	//$this->import_matches($raw_import, $event_meta, $columns);
-	$this->import_matches_r($raw_import, $event_meta, $columns);
+	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season.'', 'date_format' => $date_format);
+	$this->import_matches($raw_import, $event_meta, $columns);
+	//$this->import_matches_r($raw_import, $event_meta, $columns);
 }
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {

@@ -429,7 +429,9 @@ class SP_Calendar extends SP_Secondary_Post {
 				$args['order'] = 'DESC';
 				$args['posts_per_page'] = ceil( $this->number / 2 );
 				
+				error_log("args:" . var_export($args, true));
 				$results = get_posts( $args );
+				error_log("results:" . var_export($results, true));
 				$results = array_reverse( $results, true );
 
 				$args['post_status'] = 'future';
@@ -439,7 +441,41 @@ class SP_Calendar extends SP_Secondary_Post {
 
 				$events = array_merge_recursive( $results, $fixtures );
 			} else {
+// 				$args = array (
+//   'post_type' => 'sp_event',
+//   'posts_per_page' => -1,
+//   'orderby' => 'date',
+//   'order' => 'ASC',
+//   'post_status' => 'any',
+//   'meta_query' => 
+//   array (
+//     'relation' => 'AND',
+//   ),
+//   'tax_query' => 
+//   array (
+//     'relation' => 'AND',
+//     0 => 
+//     array (
+//       'taxonomy' => 'sp_league',
+//       'field' => 'term_id',
+//       'terms' => 
+//       array (
+//         0 => 53,
+//       ),
+//     ),
+//     1 => 
+//     array (
+//       'taxonomy' => 'sp_venue',
+//       'field' => 'term_id',
+//       'terms' => 
+//       array (
+//         0 => 54,
+//       ),
+//     ),
+//   ),
+// );
 				$events = get_posts( $args );
+				error_log("args:" . var_export($args, true));
 			}
 
 		else:
