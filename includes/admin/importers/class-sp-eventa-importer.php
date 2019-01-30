@@ -420,7 +420,9 @@ function upsert_match($match, $event_format, $league, $season){
 		wp_set_object_terms( $match_id, $season, 'sp_season', false );
 	endif;
 
-	update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
+	//update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
+	update_post_meta( $match_id, 'sp_day',  'AABC');
+	//wp_set_object_terms( $match_id, 'AABC', 'sp_day', false );
 	return $match_id;
 }
 function player_upsert(&$player){
@@ -547,7 +549,9 @@ function match_upsert(&$match){
 		'grade' => $match['matchGrade'], 
 		'section' => $match['matchSection'] ));
 
-	update_post_meta( $match_id, 'sp_day', $match['matchDate'] );
+	//update_post_meta( $match_id, 'sp_day', '2018/01/01');//$match['matchDate']
+	//wp_set_object_terms( $match_id, 'AABC', 'sp_day', false );
+	update_post_meta( $match_id, 'sp_day',  'AABC');
 	$match['id'] = $match_id;
 }
 
@@ -668,7 +672,9 @@ function commit_import($import_data = array()){
 
 		update_post_meta( $match_id, 'sp_results', $event_results );
 		update_post_meta( $match_id, 'sp_players', $players_aps );
-		update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
+		//update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
+		//update_post_meta( $match_id, 'sp_day',  'AABC');//$match['matchDate']
+		wp_set_object_terms( $match_id, 'AABC', 'sp_day', false );
 	}
 }
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
@@ -767,6 +773,7 @@ endif;
 		wp_set_object_terms( $match_id, $season, 'sp_season', false );
 	endif;
 
+	update_post_meta( $match_id, 'sp_day', $match['matchDate'] );
 	// Update venue
 	wp_set_object_terms( $match_id, $match['venue'], 'sp_venue', false );
 

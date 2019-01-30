@@ -327,9 +327,24 @@ class SP_League_Table extends SP_Secondary_Post {
 				);
 			endif;
 		endif;
-		
+error_log("args:" . var_export($args, true));
+$args = array (
+  'post_type' => 'sp_event',
+  'posts_per_page' => -1,
+  'orderby' => 'date',
+  'order' => 'ASC',
+  'post_status' => 'any',
+  'meta_query' => 
+  array (
+    'relation' => 'AND',
+  ),
+  'tax_query' => 
+  array (
+    'relation' => 'AND',
+  ),
+);
 		$events = get_posts( $args );
-
+error_log("events:" . var_export($events, true));
 		// Remove range filters
 		remove_filter( 'posts_where', array( $this, 'range' ) );
 		remove_filter( 'posts_where', array( $this, 'relative' ) );
@@ -341,6 +356,7 @@ class SP_League_Table extends SP_Secondary_Post {
 
 			$teams = (array)get_post_meta( $event->ID, 'sp_team', false );
 			$teams = array_filter( $teams );
+error_log("teams:" . var_export($teams, true));
 			if ( ! $is_main_loop && sizeof( array_diff( $teams, $team_ids ) ) ) continue;
 
 			$results = (array)get_post_meta( $event->ID, 'sp_results', true );
@@ -369,11 +385,14 @@ class SP_League_Table extends SP_Secondary_Post {
 						foreach ( $value as $outcome ):
 
 							// Increment events played and outcome count
-							if ( array_key_exists( $team_id, $totals ) && is_array( $totals[ $team_id ] ) && array_key_exists( $outcome, $totals[ $team_id ] ) ):
+							if ( array_key_exists( $team_id, $totals ) 
+								//&& is_array( $totals[ $team_id ] ) 
+								//&& array_key_exists( $outcome, $totals[ $team_id ] ) 
+							):
 								$totals[ $team_id ]['eventsplayed'] ++;
 								$totals[ $team_id ]['eventminutes'] += $minutes;
 								$totals[ $team_id ][ $outcome ] ++;
-
+error_log("totals:" . var_export($totals, true));
 								// Add to home or away stats
 								if ( 0 === $i ):
 									$totals[ $team_id ]['eventsplayed_home'] ++;
@@ -442,7 +461,7 @@ class SP_League_Table extends SP_Secondary_Post {
 
 							$totals[ $team_id ][ $key . 'for' ] += $value;
 							$totals[ $team_id ][ $key . 'for' . ( $e + 1 ) ] = $value;
-
+error_log("totalsp:" . var_export($totals, true));
 							// Add to home or away stats
 							if ( 0 === $i ):
 								$totals[ $team_id ][ $key . 'for_home' ] += $value;

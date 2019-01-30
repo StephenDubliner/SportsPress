@@ -433,7 +433,7 @@ class SP_Event extends SP_Custom_Post{
 
 		// Get results from event
 		$results = get_post_meta( $this->ID, 'sp_results', true );
-
+		
 		// Loop through teams			
 		foreach ( $teams as $team_id ) {
 
@@ -463,7 +463,7 @@ class SP_Event extends SP_Custom_Post{
 				}
 			}
 
-			if ( null != $team_result ) {
+			if ( null != $team_result || $team_result == 0) {
 				$output[] = $team_result;
 			}
 		}
