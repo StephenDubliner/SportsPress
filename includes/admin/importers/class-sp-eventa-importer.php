@@ -954,14 +954,15 @@ endif;
 		//$this->Trace('pperf', $players);
 		update_post_meta( $match_id, 'sp_players', $players );
 	endif;
-	$positions = array(60);
-	wp_set_object_terms( $match_id, 
-		$match['matchSection'] == 'WD' ||
-		$match['matchSection'] == 'WS'
-		 ?
-		array_merge($positions, array(59, 62)):
-		array_merge($positions, array(58, 61)),
+	
+	$positions = array();
+	$all_positions = array(58=>'MS',59=>'WS', 60=>'XD',61=>'MD',62=>'WD');
+	if(in_array($match['matchSection'], $all_positions)){
+		$p = array(array_search($match['matchSection'], $all_positions));
+	wp_set_object_terms( $match_id, $p,
 		 'sp_position', true );
+	}
+
 
 	$this->imported++;
 endforeach;
@@ -1170,8 +1171,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3,6,8),//
-		'sections'=>array('WD', 'XD', 'MD')),//
+		'grades'=>array(3,),//6,8
+		'sections'=>array('WD',  'MD')),//'XD',
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
