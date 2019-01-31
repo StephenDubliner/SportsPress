@@ -301,7 +301,7 @@ function player_meta($match, $player1_name){
 	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
 	'name' => $player1_name,
 	'pseudo' => 'PS-'.$player1_name,
-	'usepseudo' => mt_rand(0, 1) ? 'Y': null,
+	'usepseudo' => null,//mt_rand(0, 1) ? 'Y': null,
 	'grade' => $match['matchGrade']
 );
 }
@@ -979,8 +979,8 @@ function random_player($gender, $grade, $id){
 		'grade' => $grade,
 		'rl' => (mt_rand(0,1) == 0 ? 'R' : 'L'),
 		'id' => $id,
-		'pseudo' => 'aka ' . $fullname, 
-		'usepseudo' => mt_rand(0,1)?'Y':null,
+		'pseudo' => 'PSx-' . $fullname, 
+		'usepseudo' => null, //mt_rand(0,1)?'Y':null,
 		'bi' => $id, 
 		'height' => mt_rand(159,205),
 		'club' => mt_rand(0,1)?'SD':'DB', 
@@ -990,13 +990,19 @@ function random_player($gender, $grade, $id){
 }
 function random_players(){
 	$all_players = array();
-	$gender = 'M';
 	$id = 0;
+	$excluded = array();
 	for($grade = 1; $grade < 11; $grade++):
 		for($i = 0; $i < 80; $i++): //all grades
-			$gender = ($gender=='M')?'F':'M';
-			array_push($all_players, $this->random_player($gender, $grade, $id));
-			$id++;
+			$gender = mt_rand(0,1)?'F':'M';
+			$rp = $this->random_player($gender, $grade, $id);
+			if(! in_array($rp['name'], $excluded)){
+				array_push($excluded, $rp['name']);
+				//$all_players[$rp['name']] = $rp;
+				array_push($all_players, $rp);
+				$id++;
+			}
+					
 		endfor;
 	endfor;
 	return $all_players;
@@ -1145,8 +1151,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3),//,6,8
-		'sections'=>array('XD')),//, 'MD', 'WD'
+		'grades'=>array(3,6,8),//
+		'sections'=>array('XD', 'MD', 'WD')),//
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
