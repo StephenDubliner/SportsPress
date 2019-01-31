@@ -428,8 +428,8 @@ function upsert_match($match, $event_format, $league, $season){
 		wp_set_object_terms( $match_id, $season, 'sp_season', false );
 	endif;
 
-	//update_post_meta( $match_id, 'sp_day',  '2018/01/01');//$match['matchDate']
-	update_post_meta( $match_id, 'sp_day',  'AABC');
+	//update_post_meta( $match_id, 'sp_day',  '2018/01/01');//
+	update_post_meta( $match_id, 'sp_day', $match['matchDate']);
 	//wp_set_object_terms( $match_id, 'AABC', 'sp_day', false );
 	return $match_id;
 }
@@ -557,9 +557,9 @@ function match_upsert(&$match){
 		'grade' => $match['matchGrade'], 
 		'section' => $match['matchSection'] ));
 
-	//update_post_meta( $match_id, 'sp_day', '2018/01/01');//$match['matchDate']
+	//update_post_meta( $match_id, 'sp_day', '2018/01/01');//
 	//wp_set_object_terms( $match_id, 'AABC', 'sp_day', false );
-	update_post_meta( $match_id, 'sp_day',  'AABC');
+	update_post_meta( $match_id, 'sp_day',  $match['matchDate']);
 	$match['id'] = $match_id;
 }
 
@@ -951,10 +951,17 @@ endif;
 	endforeach;
 	// Add player performance to last event if available
 	if ( isset( $match_id ) && isset( $players ) && sizeof( $players ) > 0 ):
-		$this->Trace('pperf', $players);
+		//$this->Trace('pperf', $players);
 		update_post_meta( $match_id, 'sp_players', $players );
-	endif;	
-
+	endif;
+	$positions = array(60);
+	wp_set_object_terms( $match_id, 
+		$match['matchSection'] == 'WD' ||
+		$match['matchSection'] == 'WS'
+		 ?
+		array_merge($positions, array(59, 62)):
+		array_merge($positions, array(58, 61)),
+		 'sp_position', true );
 
 	$this->imported++;
 endforeach;
