@@ -42,6 +42,7 @@ class SP_Player_List extends SP_Secondary_Post {
 	 * @return array
 	 */
 	public function data( $admin = false, $leagues = null, $seasons = null, $team_id = null ) {
+		//error_log("data:" . var_export($leagues, true));
 		if ( !is_null( $leagues ) && '0' != $leagues ) {
 			$league_ids = explode( ",", $leagues );
 		}else{
@@ -168,7 +169,7 @@ class SP_Player_List extends SP_Secondary_Post {
 				);
 			endif;
 
-/*
+
 			if ( $position_ids ):
 				$args['tax_query'][] = array(
 					'taxonomy' => 'sp_position',
@@ -176,15 +177,39 @@ class SP_Player_List extends SP_Secondary_Post {
 					'terms' => $position_ids
 				);
 			endif;
-
 			$args = apply_filters( 'sportspress_player_list_args', $args, $team );
-
+//error_log("argsf:" . var_export($args, true));
+// $args = array (
+//   'post_type' => 'sp_player',
+//   'numberposts' => -1,
+//   'posts_per_page' => -1,
+//   'meta_key' => 'sp_number',
+//   'orderby' => 'meta_value_num',
+//   'order' => 'ASC',
+//   'meta_query' => 
+//   array (
+//     'relation' => 'AND',
+//   ),
+//   'tax_query' => 
+//   array (
+//     'relation' => 'AND',
+//     0 => 
+//     array (
+//       'taxonomy' => 'sp_league',
+//       'field' => 'term_id',
+//       'terms' => 
+//       array (
+//         0 => 73,
+//       ),
+//     ),
+//   ),
+// );
 			$players = (array) get_posts( $args );
 
 			$players = apply_filters( 'sportspress_player_list_players', $players, $args, $team, $team_key );
-			*/
-
 			
+
+			/*
 			if ( $competitions && $filter == 'competition' ) :
 				unset($args['tax_query']);
 				if ( $position_ids ):
@@ -204,7 +229,7 @@ class SP_Player_List extends SP_Secondary_Post {
 
 			$players = (array) get_posts( $args );
 			$players = apply_filters( 'sportspress_player_list_players', $players, $args, $team, $team_key );
-
+*/
 			if ( $competitions && $filter == 'both' ) :
 				unset($args['tax_query']);
 				if ( $position_ids ):
@@ -331,11 +356,11 @@ class SP_Player_List extends SP_Secondary_Post {
 
 		$diff = array_diff( $this->columns, $ordered_columns );
 		$this->columns = array_merge( $diff, $ordered_columns );
-
+//error_log("player_ids:" . var_export($player_ids, true));
 		foreach ( $player_ids as $player_id ):
 			if ( ! $player_id )
 				continue;
-
+//error_log("player_id1:" . var_export($player_id, true));
 			// Initialize player totals
 			$totals[ $player_id ] = array( 'eventsattended' => 0, 'eventsplayed' => 0, 'eventsstarted' => 0, 'eventssubbed' => 0, 'eventminutes' => 0 );
 
@@ -402,6 +427,15 @@ class SP_Player_List extends SP_Secondary_Post {
 			),
 			'tax_query' => array(
 				'relation' => 'AND',
+    0 => 
+    array (
+      'taxonomy' => 'sp_position',
+      'field' => 'term_id',
+      'terms' => 
+      array (
+        0 => 59,
+      ),
+    ),
 			),
 		);
 
@@ -439,7 +473,7 @@ class SP_Player_List extends SP_Secondary_Post {
 		endif;
 
 		$args = apply_filters( 'sportspress_list_data_event_args', $args );
-		
+		//error_log("args:" . var_export($args, true));
 		$events = get_posts( $args );
 
 		// Remove range filters
@@ -447,7 +481,10 @@ class SP_Player_List extends SP_Secondary_Post {
 		remove_filter( 'posts_where', array( $this, 'relative' ) );
 
 		// Event loop
+		//error_log("events:" . var_export($events, true));
 		foreach ( $events as $i => $event ):
+			if($event == null) continue;
+
 			$specs = (array)get_post_meta( $event->ID, 'sp_specs', true );           
             $eventFactors = array(
                     'winfactor' => sp_array_value($specs,'winfactor', array()), 
@@ -458,6 +495,12 @@ class SP_Player_List extends SP_Secondary_Post {
 			$timeline = (array)get_post_meta( $event->ID, 'sp_timeline', true );
 			$minutes = get_post_meta( $event->ID, 'sp_minutes', true );
             
+
+            // error_log("player_id:" . var_export($player_id, true));
+            // error_log("totals:" . var_export($totals, true));
+            // error_log("eventFactors:" . var_export($eventFactors, true));
+            
+            if($eventFactors == null || $player_id == null || $totals[ $player_id ] == null) continue;
             $totals[ $player_id ] = array_merge($totals[ $player_id ], $eventFactors);
 			if ( $minutes === '' ) $minutes = get_option( 'sportspress_event_minutes', 90 );
 
@@ -818,7 +861,7 @@ class SP_Player_List extends SP_Secondary_Post {
 			}
 
 			$merged[0] = array_merge( $labels, $columns );
-//error_log("merged:" . var_export($merged, true));
+
 			return $merged;
 		endif;
 	}

@@ -79,7 +79,7 @@ function delete_all_of_type() {
 }
 
 function build_match($commonDetails, $rowA, $rowB){
-
+	//$this->Trace('commonDetails',$commonDetails);
 	$result = array();
 	$result['matchDate'] = $this->nvl($commonDetails[0],'2019/01/01');
 	$result['venue'] = $this->nvl($commonDetails[1],'Baldoyle');
@@ -186,6 +186,7 @@ function trace($label, $o){
 }
 
 function link_player($player, $league, $season, $match_id, $team_id){
+//$this->Trace('player',$player);
 $player1_name = $player['usepseudo'] == 'Y' ? $this->nvl($player['pseudo'], $player['name']) : $player['name'];
 $pseudo = $player['pseudo'];//'PS-' . $player1_name;
 	$player1_id = null;
@@ -223,6 +224,9 @@ wp_strip_all_tags( $player1_name );
 
 		// Update number
 		update_post_meta( $player1_id, 'sp_number', $player1_id );
+		//if($player['gender'] == 'F')
+			//update_post_meta( $player1_id, 'sp_position', array(59) );
+		
 		update_post_meta( $player1_id, 'sp_nationality', array_rand(
 			//array('irl', 'fra', 'usa', 'ita', 'ger')
 			SP()->countries->countries
@@ -254,7 +258,11 @@ wp_strip_all_tags( $player1_name );
 	if ( $season ):
 		wp_set_object_terms( $player1_id, $season, 'sp_season', true );
 	endif;
-
+	wp_set_object_terms( $player1_id, 
+		$player['gender'] == 'F' ?
+		array(59, 60, 62):
+		array(58, 60, 61),
+		 'sp_position', true );
 
 
 	// Get player teams
@@ -329,7 +337,7 @@ function import_matches_r( $array = array(), $event_meta = array(), $columns = a
 	$row_check = array_filter( $rows[$matchImportIdx] );
 
 	if ( !empty( $row_check ) ) {
-		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
+		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 4 );
 		$rowA = array_slice( $rows[$matchImportIdx], 4);
 		$rowB = array_slice( $rows[$matchImportIdx+1], 4);
 		$match = $this->build_match($commonDetails, $rowA, $rowB);
@@ -680,6 +688,7 @@ function commit_import($import_data = array()){
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 
 	$rows = array_chunk( $array, 8 );//sizeof( $columns )
+
 	$event_format = $this->nvl($event_meta['event_format'], 'league');;
 	$league = $this->nvl($event_meta['league'], -1);;
 	$season = $this->nvl($event_meta['season'], -1);
@@ -701,7 +710,7 @@ function import_matches( $array = array(), $event_meta = array(), $columns = arr
 	$row_check = array_filter( $rows[$matchImportIdx] );
 
 	if ( !empty( $row_check ) ) {
-		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 3 );
+		$commonDetails = array_slice( $rows[$matchImportIdx], 0, 4 );
 		$rowA = array_slice( $rows[$matchImportIdx], 4);
 		$rowB = array_slice( $rows[$matchImportIdx+1], 4);
 		$match = $this->build_match($commonDetails, $rowA, $rowB);
@@ -712,7 +721,8 @@ function import_matches( $array = array(), $event_meta = array(), $columns = arr
 	$matchImportIdx += 2;
 	endwhile;
 	$mc = sizeof($matches);
-	$this->Trace('processing matches', $mc);
+	//$this->Trace('matches',$matches);
+
 	foreach ( $matches as $match ):
 
 		$match_check = array_filter( $match );
@@ -1002,7 +1012,7 @@ function random_players(){
 				array_push($all_players, $rp);
 				$id++;
 			}
-					
+
 		endfor;
 	endfor;
 	return $all_players;
@@ -1040,8 +1050,7 @@ function random_match_points($format, $max){//number of games in a match
 		$result = array(0 => $result_a, 1 => $result_b);
 		$awc += $outcome == 1 ? 1 : 0;
 		$bwc += $outcome == 0 ? 1 : 0;
-		if($awc == 2 || $bwc == 2)
-			//($format == 3 || $format == 5) && $wc == ($format -1))
+		if($awc == 2 || $bwc == 2) //best of 3, the match is resolved to whoever take 2 games first
 			break;
 	}
 
@@ -1087,7 +1096,10 @@ function random_match_points_complete($format, $max){//number of games in a matc
 }
 function random_two_teams($players, $grade, $section, &$excluded){
 	$teams_in_match = array();
-
+	$pa = array();
+	$pb = array();
+	$pc = array();
+	$pd = array();
 	if($section == 'XD'):
 		$pa = $this->find_player($players, 'M', $grade, $excluded);
 		$pb = $this->find_player($players, 'F', $grade, $excluded);
@@ -1152,7 +1164,7 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'formatGame' => '21',
 		'formatMatch' => '3',
 		'grades'=>array(3,6,8),//
-		'sections'=>array('XD', 'MD', 'WD')),//
+		'sections'=>array('WD', 'XD', 'MD')),//
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
@@ -1230,10 +1242,10 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$this->Trace('raw_import', $raw_import);
 	$this->Trace('file_import', $array);
-		$league = $annual_events['Christmas Bonanza']['league'];
-		$season = $seasons[0];
-		//$annual_events['Christmas Bonanza']['venue']
-		//$annual_events['Christmas Bonanza']['title']
+	$league = $annual_events['Christmas Bonanza']['league'];
+	$season = $seasons[0];
+	//$annual_events['Christmas Bonanza']['venue']
+	//$annual_events['Christmas Bonanza']['title']
 
 	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season.'', 'date_format' => $date_format);
 	$this->import_matches($raw_import, $event_meta, $columns);
