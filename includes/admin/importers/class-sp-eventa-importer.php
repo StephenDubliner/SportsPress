@@ -193,13 +193,13 @@ $pseudo = $player['pseudo'];//'PS-' . $player1_name;
 	$player1_number = null;
 	$result = array();
 	if(trim($player1_name) != ''):
-$this->Trace('link_player',$player1_name);
+//$this->Trace('link_player',$player1_name);
 	// Find out if player exists
 	$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
 
 	// Get or insert player
 	if ( $player1_object ):
-$this->Trace('exists',$player1_name);
+///$this->Trace('exists',$player1_name);
 		// Make sure player is published
 		if ( $player_object->post_status != 'publish' ):
 			wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
@@ -207,12 +207,12 @@ $this->Trace('exists',$player1_name);
 
 		// Get player ID
 		$player1_id = $player1_object->ID;
-$this->Trace('id',$player1_id);
+//$this->Trace('id',$player1_id);
 		// Get player number
 		$player1_number = get_post_meta( $player1_id, 'sp_number', true );
 
 	else:
-$this->Trace('new player',$player1_name);
+//$this->Trace('new player',$player1_name);
 		// Insert player
 $post_title = 
 //wp_strip_all_tags($pseudo);
@@ -262,6 +262,8 @@ wp_strip_all_tags( $player1_name );
 		$player['gender'] == 'F' ?
 		array(59, 60, 62):
 		array(58, 60, 61),
+		// array(62):
+		// array(61),		
 		 'sp_position', true );
 
 
@@ -348,7 +350,7 @@ function import_matches_r( $array = array(), $event_meta = array(), $columns = a
 	$matchImportIdx += 2;
 	endwhile;
 	$mc = sizeof($matches);
-	$this->Trace('processing matches', $mc);
+	//$this->Trace('processing matches', $mc);
 
 	$import_data['season'] = $season;
 	$import_data['league'] = $league;
@@ -402,7 +404,7 @@ function upsert_match($match, $event_format, $league, $season){
 
 			// Insert event
 			$match_id = wp_insert_post( $args );
-			$this->Trace('match_id created', $match_id);
+			//$this->Trace('match_id created', $match_id);
 			update_post_meta( $match_id, 'sp_event_hash', $match_hash );
 		endif;
 	//$this->Trace('match', $match);
@@ -526,7 +528,7 @@ function match_upsert(&$match){
 
 		// Insert event
 		$match_id = wp_insert_post( $args );
-		$this->Trace('match_id created', $match_id);
+		//$this->Trace('match_id created', $match_id);
 		update_post_meta( $match_id, 'sp_event_hash', $match_hash );
 	endif;
 
@@ -912,8 +914,8 @@ endif;
 
 		$outcome_slug = null;
 		$outcome = $team_match_data['outcomeLabel'];
-		$this->Trace('team_name', $team_name);
-		$this->Trace('outcomeLabel', $outcome);
+		//$this->Trace('team_name', $team_name);
+		//$this->Trace('outcomeLabel', $outcome);
 		
 
 		// Get or insert outcome
@@ -946,9 +948,12 @@ endif;
 		// Update event results
 		update_post_meta( $match_id, 'sp_results', $event_results );
 		
-		update_post_meta( $match_id, 'sp_specs', array('grade'=> $match['matchGrade'], 'section'=> $match['matchSection'] ));//winfactor lostfactor
 
 	endforeach;
+	update_post_meta( $match_id, 'sp_specs', array('grade'=> $match['matchGrade'], 'section'=> $match['matchSection'] ));//winfactor lostfactor
+
+	update_post_meta( $match_id, 'sp_eventsection', $match['matchSection'] );//winfactor lostfactor
+
 	// Add player performance to last event if available
 	if ( isset( $match_id ) && isset( $players ) && sizeof( $players ) > 0 ):
 		//$this->Trace('pperf', $players);
@@ -957,11 +962,11 @@ endif;
 	
 	$positions = array();
 	$all_positions = array(58=>'MS',59=>'WS', 60=>'XD',61=>'MD',62=>'WD');
-	if(in_array($match['matchSection'], $all_positions)){
-		$p = array(array_search($match['matchSection'], $all_positions));
-	wp_set_object_terms( $match_id, $p,
-		 'sp_position', true );
-	}
+	$p = array(array_search($match['matchSection'], $all_positions));
+	$this->Trace('mpos', $p);
+	if($p)
+		wp_set_object_terms( $match_id, $p, 'sp_position', true );
+	//die();
 
 
 	$this->imported++;
@@ -1248,8 +1253,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		}
 	}
 
-	$this->Trace('raw_import', $raw_import);
-	$this->Trace('file_import', $array);
+	//$this->Trace('raw_import', $raw_import);
+	//$this->Trace('file_import', $array);
 	$league = $annual_events['Christmas Bonanza']['league'];
 	$season = $seasons[0];
 	//$annual_events['Christmas Bonanza']['venue']

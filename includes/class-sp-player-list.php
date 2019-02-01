@@ -427,18 +427,24 @@ class SP_Player_List extends SP_Secondary_Post {
 			),
 			'tax_query' => array(
 				'relation' => 'AND',
-    0 => 
-    array (
-      'taxonomy' => 'sp_position',
-      'field' => 'term_id',
-      'terms' => 
-      array (
-        0 => 59,
-      ),
-    ),
+    // 0 => 
+    // array (
+    //   'taxonomy' => 'sp_position',
+    //   'field' => 'term_id',
+    //   'terms' => 
+    //   array (
+    //     0 => 59,
+    //   ),
+    // ),
 			),
 		);
-
+		if ( $position_ids ):
+			$args['tax_query'][] = array(
+				'taxonomy' => 'sp_position',
+				'field' => 'term_id',
+				'terms' => $position_ids
+			);
+		endif;
 		if ( $league_ids ):
 			$args['tax_query'][] = array(
 				'taxonomy' => 'sp_league',
@@ -473,7 +479,52 @@ class SP_Player_List extends SP_Secondary_Post {
 		endif;
 
 		$args = apply_filters( 'sportspress_list_data_event_args', $args );
-		//error_log("args:" . var_export($args, true));
+		
+		$args=array (
+  'post_type' => 'sp_event',
+  'numberposts' => -1,
+  'posts_per_page' => -1,
+  'order' => 'DESC',
+  'meta_query' => 
+  array (
+  	'relation' => 'AND',
+    0 => 
+    array (
+      'key' => 'sp_format',
+      'value' => 
+      array (
+        0 => 'league',
+      ),
+      'compare' => 'IN',
+    ),
+    1 => 
+    array (
+      'key' => 'sp_eventsection',
+      'value' => 
+      array (
+        //1 => 'MD',
+        //0 => 'WD',
+        0 => $section,
+      ),
+      //'compare' => 'IN',
+    ),
+  ),
+  // 'tax_query' => 
+  // array (
+  //   'relation' => 'AND',
+  //   0 => 
+  //   array (
+  //     'taxonomy' => 'sp_position',
+  //     'field' => 'term_id',
+  //     'terms' => 
+  //     array (
+  //       //0 => 61,
+  //       1 => 62,
+  //     ),
+  //   ),
+  // ),
+);
+		error_log("args:" . var_export($args, true));
 		$events = get_posts( $args );
 
 		// Remove range filters
@@ -481,7 +532,8 @@ class SP_Player_List extends SP_Secondary_Post {
 		remove_filter( 'posts_where', array( $this, 'relative' ) );
 
 		// Event loop
-		//error_log("events:" . var_export($events, true));
+		$es = sizeof($events);
+		error_log("Nevents:" . var_export($es, true));
 		foreach ( $events as $i => $event ):
 			if($event == null) continue;
 
