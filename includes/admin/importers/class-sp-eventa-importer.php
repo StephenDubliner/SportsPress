@@ -308,7 +308,6 @@ function match_hash($match){
 }
 function player_meta($match, $player1_name){
 	return array(
-	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
 	'name' => $player1_name,
 	'pseudo' => 'PS-'.$player1_name,
 	'usepseudo' => null,//mt_rand(0, 1) ? 'Y': null,
@@ -841,9 +840,20 @@ endif;
 
 //$this->Trace('team_match_data',$team_match_data);
 		list($player1_name, $player2_name) = $team_match_data['players'];
+			//'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
+
 		$p1m = $this->player_meta($match, $player1_name);
+
 		$p2m = $this->player_meta($match, $player2_name);
 
+
+if($match['matchSection']=='XD'):
+	$p1m['gender'] = 'M';
+	$p2m['gender'] = 'F';
+else:
+	$p1m['gender'] = $match['matchSection'] == 'MD'?'M':'F';
+	$p2m['gender'] = $p1m['gender'];
+endif;
 		// $match['taTitle'] = $this=>teamName($match['players']);
 		// $match['tbTitle'] = $this=>teamName($match['players']);
 		//  array(
@@ -1177,7 +1187,7 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'formatGame' => '21',
 		'formatMatch' => '3',
 		'grades'=>array(3,6,8),//
-		'sections'=>array('WD', 'XD', 'MD')),//
+		'sections'=>array( 'WD','XD' ,'MD')),// 
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
