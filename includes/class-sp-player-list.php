@@ -488,6 +488,8 @@ class SP_Player_List extends SP_Secondary_Post {
 		elseif($position_ids[0] == 60):
 			$section = 'XD';
 		endif;
+
+
 		$args=array (
   'post_type' => 'sp_event',
   'numberposts' => -1,
@@ -504,18 +506,7 @@ class SP_Player_List extends SP_Secondary_Post {
         0 => 'league',
       ),
       'compare' => 'IN',
-    ),
-    1 => 
-    array (
-      'key' => 'sp_eventsection',
-      'value' => 
-      array (
-        //1 => 'MD',
-        //0 => 'WD',
-        0 => $section,
-      ),
-      //'compare' => 'IN',
-    ),
+    )
   ),
   // 'tax_query' => 
   // array (
@@ -532,6 +523,17 @@ class SP_Player_List extends SP_Secondary_Post {
   //   ),
   // ),
 );
+
+		if($section != 'x'){
+	$event_section = array (
+      'key' => 'sp_eventsection',
+      'value' => 
+      array (
+        0 => $section,
+      ),
+    );
+		$args['meta_query'][] = $event_section;
+	}
 		//error_log("args:" . var_export($args, true));
 		$events = get_posts( $args );
 

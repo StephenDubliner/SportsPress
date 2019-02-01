@@ -187,7 +187,7 @@ function trace($label, $o){
 
 function link_player($player, $league, $season, $match_id, $team_id){
 //$this->Trace('player',$player);
-$player1_name = $player['usepseudo'] == 'Y' ? $this->nvl($player['pseudo'], $player['name']) : $player['name'];
+$player1_name = $player['name'];
 $pseudo = $player['pseudo'];//'PS-' . $player1_name;
 	$player1_id = null;
 	$player1_number = null;
@@ -1176,7 +1176,7 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3,6,8),//
+		'grades'=>array(3),//,6,8
 		'sections'=>array('WD', 'XD', 'MD')),//
 	//more
 	);
