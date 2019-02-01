@@ -231,6 +231,7 @@ wp_strip_all_tags( $player1_name );
 			//array('irl', 'fra', 'usa', 'ita', 'ger')
 			SP()->countries->countries
 			, 1));
+		update_post_meta( $player1_id, '_thumbnail_id', $player['gender'] == 'F' ? 9185 : 9186);
 
 		// Get player number
 		$player1_number = $player1_id;
@@ -1186,7 +1187,7 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3,6,8),//
+		'grades'=>array(3,),//6,8
 		'sections'=>array( 'WD','XD' ,'MD')),// 
 	//more
 	);
