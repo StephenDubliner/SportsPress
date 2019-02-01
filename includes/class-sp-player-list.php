@@ -479,7 +479,15 @@ class SP_Player_List extends SP_Secondary_Post {
 		endif;
 
 		$args = apply_filters( 'sportspress_list_data_event_args', $args );
-		
+		$section = 'x';
+		//error_log("position_ids:" . var_export($position_ids, true));
+		if($position_ids[0] == 58):
+			$section = 'MD';
+		elseif($position_ids[0] == 59):
+			$section = 'WD';
+		elseif($position_ids[0] == 60):
+			$section = 'XD';
+		endif;
 		$args=array (
   'post_type' => 'sp_event',
   'numberposts' => -1,
@@ -524,7 +532,7 @@ class SP_Player_List extends SP_Secondary_Post {
   //   ),
   // ),
 );
-		error_log("args:" . var_export($args, true));
+		//error_log("args:" . var_export($args, true));
 		$events = get_posts( $args );
 
 		// Remove range filters
@@ -533,7 +541,7 @@ class SP_Player_List extends SP_Secondary_Post {
 
 		// Event loop
 		$es = sizeof($events);
-		error_log("Nevents:" . var_export($es, true));
+		//error_log("Nevents:" . var_export($es, true));
 		foreach ( $events as $i => $event ):
 			if($event == null) continue;
 
