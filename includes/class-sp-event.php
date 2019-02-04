@@ -81,6 +81,7 @@ class SP_Event extends SP_Custom_Post{
 			$data[0] = $columns;
 			return $data;
 		endif;
+
 	}
 
 	public function performance( $admin = false ) {
