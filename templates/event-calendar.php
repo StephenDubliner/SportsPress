@@ -72,7 +72,7 @@ if ($override_global_date) {
 	$monthnum = gmdate('m', current_time('timestamp'));
 }
 $events = $calendar->data();
-error_log("events:" . var_export($events, true));
+//error_log("events:" . var_export($events, true));
 if ( empty( $events ) ) {
 	$in = 'AND 1 = 0'; // False logic to prevent SQL error
 } else {

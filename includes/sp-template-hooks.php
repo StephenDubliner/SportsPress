@@ -39,6 +39,11 @@ function sportspress_the_title( $title, $id = null ) {
 	if ( ! is_admin() && in_the_loop() && $id == get_the_ID() ):
 		if ( is_singular( 'sp_player' ) ):
 			$number = get_post_meta( $id, 'sp_number', true );
+			$metrics = (array)get_post_meta( $id, 'sp_metrics', true );
+//error_log("metrics:" . var_export($metrics, true));
+
+if($metrics['usepseudo']=='Y') 
+	$title = $metrics['pseudo'];
 			if ( $number != null ):
 				$title = '<strong class="sp-player-number">' . $number . '</strong> ' . $title;
 			endif;

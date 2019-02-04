@@ -11,7 +11,12 @@
  * @author 		ThemeBoy
  */
 class SP_Player extends SP_Custom_Post {
+// public function get_label(){
+// 	$m = $this->metrics(false);
+// 		//error_log("m:" . var_export($m, true));
 
+// 	return $m['usePseudo'] == 'Y' ? $m['Pseudo'] : $this->post->post_title;
+// }
 	/**
 	 * Returns positions sorted by `sp_order`.
 	 *
@@ -869,7 +874,7 @@ class SP_Player extends SP_Custom_Post {
 			endif;
 			
 			$merged[0] = array_merge( $labels, $columns );
-
+	//error_log("merged:" . var_export($merged, true));
 			return $merged;
 		endif;
 	}

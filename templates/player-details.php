@@ -45,7 +45,11 @@ endif;
 if ( $show_name ):
 //error_log("metrics_after:" . var_export($metrics_after, true));
 //error_log("metrics_before:" . var_export($metrics_before, true));
-	$common[ __( 'Name', 'sportspress' ) ] = $metrics_after['usepseudo'] == 'Y' ? 'hidden' : $player->post->post_title;// $player->post->post_title; $metrics_after['Pseudo']
+	//if($metrics_after['usePseudo'] == 'Y') $player->post->post_title = $metrics_after['pseudo'];
+	$common[ __( 'Name', 'sportspress' ) ] = 
+	//$player->get_label();
+	$metrics_after['usePseudo'] == 'Y' ? 'hidden' : $player->post->post_title;// $player->post->post_title;
+
 endif;
 
 if ( $show_nationality ):
@@ -80,7 +84,8 @@ if ( $show_current_teams ):
 		foreach ( $current_teams as $team ):
 			$team_name = sp_team_short_name( $team );
 			if ( $link_teams ) $team_name = '<a href="' . get_post_permalink( $team ) . '">' . $team_name . '</a>';
-			$teams[] = $team_name;
+			
+			$teams[] = $metrics_after['usePseudo'] == 'Y' ? 'hidden':$team_name;
 		endforeach;
 		$data[ __( 'Current Team', 'sportspress' ) ] = implode( ', ', $teams );
 	endif;

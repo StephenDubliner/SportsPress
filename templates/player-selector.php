@@ -62,7 +62,10 @@ $options = array();
 
 if ( $players && is_array( $players ) ):
 	foreach ( $players as $player ):
-		$name = $player->post_title;
+		$metrics = get_post_meta( $player->ID, 'sp_metrics', true );
+//error_log("metricsl:" . var_export($metrics, true));
+
+		$name = $metrics['usepseudo'] == 'Y' ? $metrics['pseudo'] : $player->post_title;
 		$number = get_post_meta( $player->ID, 'sp_number', true );
 		if ( isset( $number ) && '' !== $number ):
 			$name = $number . '. ' . $name;

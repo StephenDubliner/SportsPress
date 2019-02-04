@@ -96,7 +96,7 @@ if ( $day != 'default' )
 	$calendar->day = $day;
 $data = $calendar->data();
 $usecolumns = $calendar->columns;
-error_log("calendar->data:" . var_export($data, true));
+//error_log("calendar->data:" . var_export($data, true));
 if ( isset( $columns ) ):
 	if ( is_array( $columns ) )
 		$usecolumns = $columns;

@@ -371,6 +371,25 @@ function import_matches_r( $array = array(), $event_meta = array(), $columns = a
 	//upsert input data from $import_data
 	$this->commit_import($import_data);
 }
+function mr_usepseudo(){
+	$cc_args = array(
+		    'posts_per_page'   => -1,
+		    'post_type'        => 'sp_player',
+		    //'post_status' 	   => 'publish'
+		);
+		$q = new WP_Query( $cc_args );
+
+	while ( $q->have_posts() ) : 
+		if(mt_rand(0,1)==0 || true){
+			$p = $q->the_post();
+			$this->Trace('the_post',$p);
+			$m = get_post_meta($p, 'sp_metrics');
+			$m['usepseudo'] = 'Y';
+			update_post_meta($p->ID,'sp_metrics', $m);
+		}
+    endwhile;
+
+}
 function upsert_match($match, $event_format, $league, $season){
 		$match_check = array_filter( $match );
 		if ( empty( $match_check ) ) return null;
@@ -755,7 +774,7 @@ if($events_q->have_posts()):
 	$this->skipped++;
 	continue;
 else:
-		$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $date, 'post_title' => $match['matchTitle'] );
+	$args = array( 'post_type' => 'sp_event', 'post_status' => 'publish', 'post_date' => $date, 'post_title' => $match['matchTitle'] );
 
 	// Insert event
 	$match_id = wp_insert_post( $args );
@@ -841,36 +860,19 @@ endif;
 
 //$this->Trace('team_match_data',$team_match_data);
 		list($player1_name, $player2_name) = $team_match_data['players'];
-			//'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
 
 		$p1m = $this->player_meta($match, $player1_name);
 
 		$p2m = $this->player_meta($match, $player2_name);
 
 
-if($match['matchSection']=='XD'):
-	$p1m['gender'] = 'M';
-	$p2m['gender'] = 'F';
-else:
-	$p1m['gender'] = $match['matchSection'] == 'MD'?'M':'F';
-	$p2m['gender'] = $p1m['gender'];
-endif;
-		// $match['taTitle'] = $this=>teamName($match['players']);
-		// $match['tbTitle'] = $this=>teamName($match['players']);
-		//  array(
-		// 	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
-		// 	'name' => $player1_name,
-		// 	'pseudo' => 'PS-'.$player1_name,
-		// 	'usepseudo' => mt_rand(0, 1) ? 'Y': null,
-		// 	'grade' => $match['matchGrade']
-		// );
-		// $p2m = array(
-		// 	'gender' => $match['matchSection'] == 'MD'?'M':'F',//todo
-		// 	'name' => $player2_name,
-		// 	'pseudo' => 'PS-'.$player2_name,
-		// 	'usepseudo' => mt_rand(0, 1) ? 'Y': null,
-		// 	'grade' => $match['matchGrade']
-		// );
+		if($match['matchSection']=='XD'):
+			$p1m['gender'] = 'M';
+			$p2m['gender'] = 'F';
+		else:
+			$p1m['gender'] = $match['matchSection'] == 'MD'?'M':'F';
+			$p2m['gender'] = $p1m['gender'];
+		endif;
 		
 		$meta1 = $this->link_player($p1m, $league, $season, $match_id, $team_id);
 		$meta2 = $this->link_player($p2m, $league, $season, $match_id, $team_id);
@@ -1013,8 +1015,8 @@ function random_player($gender, $grade, $id){
 		'grade' => $grade,
 		'rl' => (mt_rand(0,1) == 0 ? 'R' : 'L'),
 		'id' => $id,
-		'pseudo' => 'PSx-' . $fullname, 
-		'usepseudo' => null, //mt_rand(0,1)?'Y':null,
+		'pseudo' => 'PS-' . $fullname, 
+		'usepseudo' => null,//mt_rand(0,4) ? null : 'Y',
 		'bi' => $id, 
 		'height' => mt_rand(159,205),
 		'club' => mt_rand(0,1)?'SD':'DB', 
@@ -1169,6 +1171,13 @@ function random_two_teams($players, $grade, $section, &$excluded){
 	}
 	return $teams_in_match;
 }
+function player_title($player){
+	if($player['usepseudo'] == Y)
+		return $player['pseudo'];
+	else
+		return $player['name'];
+}
+
 function match_points_imploded($format, $max){
 	$result = array();
 	$points = $this->random_match_points($format, $max);
@@ -1278,6 +1287,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->imported = $this->skipped = 0;
+	//$this->mr_usepseudo();
+	//die();
 	// if ( ! is_array( $array ) || ! sizeof( $array ) ):
 	// 	$this->footer();
 	// 	die();
