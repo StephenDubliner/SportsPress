@@ -41,8 +41,10 @@ function teamNameFromPiped_md5($input){
 }
 
 function teamNameFromPipedB($input){
+//global $generic_team_titles = array('aa','bb','cc');
 	return 'Team '. $generic_team_titles[md5($input)];// $adjectives[] . '-' . $noun[] ;
 }
+
 //alt team name
 //md5hash
 //adj+noun
@@ -1208,9 +1210,9 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3),//6,8
-		'sections'=>array( 'WD'),
-		)// ,'XD' ,'MD'
+		'grades'=>array(3,6,8),//
+		'sections'=>array( 'WD','XD' ,'MD'),
+		)// 
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018

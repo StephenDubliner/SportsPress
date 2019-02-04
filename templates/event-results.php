@@ -74,7 +74,7 @@ foreach( $data as $team_id => $result ):
 	foreach( $labels as $key => $label ):
 		if ( in_array( $key, array( 'name', 'outcome' ) ) )
 			continue;
-		if ( array_key_exists( $key, $result ) && $result[ $key ] != '' ):
+		if ( array_key_exists( $key, $result ) && $result[ $key ] != ''  || $result[ $key ] === 0): //fix for zeroes in event result view
 			$value = $result[ $key ];
 		else:
 			$value = apply_filters( 'sportspress_event_empty_result_string', '&mdash;' );
