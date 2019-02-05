@@ -39,11 +39,36 @@ function teamNameFromPiped($input){
 function teamNameFromPiped_md5($input){
 	return 'Team '. md5($input);
 }
+function teamNameFromPiped_initials($input){
+	//$this->Trace('input', $input);
+	$initials = array();
+	$two_players = explode( '|', $input );
+	foreach ($two_players as $playerTitle) {
+		$titleParts = explode( ' ', $playerTitle );
+		$playerInitials = array();
+		foreach ($titleParts as $titlePart) {
+			if(trim($titlePart))
+				array_push($playerInitials, $titlePart[0]);
+		}
 
+		array_push($initials, $playerInitials);
+	}
+//$this->Trace('initials', $initials);
+	$resultInitials = array();
+	foreach ($initials as $initial) {
+		array_push($resultInitials, implode('', $initial));
+	}
+
+	return implode(' with ', $resultInitials);
+	//return 'Team '. md5($input);
+}
 function teamNameFromPipedB($input){
 //global $generic_team_titles = array('aa','bb','cc');
 	return 'Team '. $generic_team_titles[md5($input)];// $adjectives[] . '-' . $noun[] ;
 }
+//extract generating players from events import
+//while generating matches take existing players to create teams
+
 
 //alt team name
 //md5hash
@@ -105,8 +130,8 @@ function build_match($commonDetails, $rowA, $rowB){
 	$points_b = explode( '|', $rowB[1] );
 	// $this->Trace('points_a',$points_a);
 	// $this->Trace('points_b',$points_b);
-	$taTitle = $this->teamNameFromPiped($rowA[0]);
-	$tbTitle = $this->teamNameFromPiped($rowB[0]);
+	$taTitle = $this->teamNameFromPiped_initials($rowA[0]);
+	$tbTitle = $this->teamNameFromPiped_initials($rowB[0]);
 	if($taTitle == null || $tbTitle == null)
 	{
 		$this->Trace('rowA', $rowA);
@@ -1210,9 +1235,9 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3,6,8),//
-		'sections'=>array( 'WD','XD' ,'MD'),
-		)// 
+		'grades'=>array(3),//,6,8
+		'sections'=>array( 'WD'),
+		)// ,'XD' ,'MD'
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
