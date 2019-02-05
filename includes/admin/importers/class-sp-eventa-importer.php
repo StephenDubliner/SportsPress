@@ -1235,9 +1235,9 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3),//,6,8
-		'sections'=>array( 'WD'),
-		)// ,'XD' ,'MD'
+		'grades'=>array(3,6,8),//
+		'sections'=>array( 'WD','XD' ,'MD'),
+		)// 
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
