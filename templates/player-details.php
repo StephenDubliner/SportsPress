@@ -43,8 +43,8 @@ if ( $show_number ):
 endif;
 
 if ( $show_name ):
-//error_log("metrics_after:" . var_export($metrics_after, true));
-//error_log("metrics_before:" . var_export($metrics_before, true));
+//sp_trace("metrics_after", $metrics_after);
+//sp_trace("metrics_before", $metrics_before);
 	//if($metrics_after['usePseudo'] == 'Y') $player->post->post_title = $metrics_after['pseudo'];
 	$common[ __( 'Name', 'sportspress' ) ] = 
 	//$player->get_label();

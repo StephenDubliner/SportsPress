@@ -40,7 +40,7 @@ function teamNameFromPiped_md5($input){
 	return 'Team '. md5($input);
 }
 function teamNameFromPiped_initials($input){
-	//$this->Trace('input', $input);
+	//sp_trace('input', $input);
 	$initials = array();
 	$two_players = explode( '|', $input );
 	foreach ($two_players as $playerTitle) {
@@ -53,7 +53,7 @@ function teamNameFromPiped_initials($input){
 
 		array_push($initials, $playerInitials);
 	}
-//$this->Trace('initials', $initials);
+//sp_trace('initials', $initials);
 	$resultInitials = array();
 	foreach ($initials as $initial) {
 		array_push($resultInitials, implode('', $initial));
@@ -87,15 +87,11 @@ function teamName($two_players = array()){
 		return null;
 	$unknown_player = 'unknknown';
 
-	$result = $this->nvl($pa_name, $unknown_player) . ' with ' . $this->nvl($pb_name, $unknown_player); 
+	$result = sp_nvl($pa_name, $unknown_player) . ' with ' . sp_nvl($pb_name, $unknown_player); 
 
 	return $result;
-	}
-function nvl($val, $replace)
-{
-    if( is_null($val) || $val === '' )  return $replace;
-    else                                return $val;
 }
+
 function delete_all_of_type() {
 
 		$post_type = array('sp_event', 'sp_team', 'sp_player');
@@ -114,28 +110,28 @@ function delete_all_of_type() {
             wp_delete_post( $post, true);
         }
         $delete_count = sizeof($post_to_delete);
-        $this->Trace('delete_count', $delete_count);
+        sp_trace('delete_count', $delete_count);
 }
 
 function build_match($commonDetails, $rowA, $rowB){
-	//$this->Trace('commonDetails',$commonDetails);
+	//sp_trace('commonDetails',$commonDetails);
 	$result = array();
-	$result['matchDate'] = $this->nvl($commonDetails[0],'2019/01/01');
-	$result['venue'] = $this->nvl($commonDetails[1],'Baldoyle');
-	$result['matchSection'] = $this->nvl($commonDetails[3], 'MD');
-	$result['matchGrade'] = $this->nvl($commonDetails[2], 11);
+	$result['matchDate'] = sp_nvl($commonDetails[0],'2019/01/01');
+	$result['venue'] = sp_nvl($commonDetails[1],'Baldoyle');
+	$result['matchSection'] = sp_nvl($commonDetails[3], 'MD');
+	$result['matchGrade'] = sp_nvl($commonDetails[2], 11);
 
 	$result['teams'] = array();
 	$points_a = explode( '|', $rowA[1] );
 	$points_b = explode( '|', $rowB[1] );
-	// $this->Trace('points_a',$points_a);
-	// $this->Trace('points_b',$points_b);
+	// sp_trace('points_a',$points_a);
+	// sp_trace('points_b',$points_b);
 	$taTitle = $this->teamNameFromPiped_initials($rowA[0]);
 	$tbTitle = $this->teamNameFromPiped_initials($rowB[0]);
 	if($taTitle == null || $tbTitle == null)
 	{
-		$this->Trace('rowA', $rowA);
-		$this->Trace('rowB', $rowB);
+		sp_trace('rowA', $rowA);
+		sp_trace('rowB', $rowB);
 		return null;
 	}
 	$result['teams'][$taTitle]['title'] = $taTitle;
@@ -195,8 +191,8 @@ function build_match($commonDetails, $rowA, $rowB){
 	$result['teams'][$tbTitle]['results']['gw'] = $agl;
 	$result['teams'][$tbTitle]['results']['gl'] = $agw;
 
-//$this->Trace($taTitle.' gw', $result['teams'][$taTitle]['results']);
-//$this->Trace($tbTitle.' gw', $result['teams'][$tbTitle]['results']);
+//sp_trace($taTitle.' gw', $result['teams'][$taTitle]['results']);
+//sp_trace($tbTitle.' gw', $result['teams'][$tbTitle]['results']);
 
 	if($result['teams'][$taTitle]['results']['gw'] > $result['teams'][$tbTitle]['results']['gw']){
 		$result['teams'][$taTitle]['outcomeLabel'] = 'Won';
@@ -215,25 +211,21 @@ function build_match($commonDetails, $rowA, $rowB){
 	return $result;
 }
 
-function trace($label, $o){
-	error_log("$label:" . var_export($o, true));
-}
-
 function link_player($player, $league, $season, $match_id, $team_id){
-//$this->Trace('player',$player);
+//sp_trace('player',$player);
 $player1_name = $player['name'];
 $pseudo = $player['pseudo'];//'PS-' . $player1_name;
 	$player1_id = null;
 	$player1_number = null;
 	$result = array();
 	if(trim($player1_name) != ''):
-//$this->Trace('link_player',$player1_name);
+//sp_trace('link_player',$player1_name);
 	// Find out if player exists
 	$player1_object = get_page_by_title( stripslashes( $player1_name ), OBJECT, 'sp_player' );
 
 	// Get or insert player
 	if ( $player1_object ):
-///$this->Trace('exists',$player1_name);
+///sp_trace('exists',$player1_name);
 		// Make sure player is published
 		if ( $player_object->post_status != 'publish' ):
 			wp_update_post( array( 'ID' => $player_object->ID, 'post_status' => 'publish' ) );
@@ -241,12 +233,12 @@ $pseudo = $player['pseudo'];//'PS-' . $player1_name;
 
 		// Get player ID
 		$player1_id = $player1_object->ID;
-//$this->Trace('id',$player1_id);
+//sp_trace('id',$player1_id);
 		// Get player number
 		$player1_number = get_post_meta( $player1_id, 'sp_number', true );
 
 	else:
-//$this->Trace('new player',$player1_name);
+//sp_trace('new player',$player1_name);
 		// Insert player
 $post_title = 
 //wp_strip_all_tags($pseudo);
@@ -351,10 +343,10 @@ function player_meta($match, $player1_name){
 }
 function import_matches_r( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 	$rows = array_chunk( $array, 8 );//sizeof( $columns )
-	$event_format = $this->nvl($event_meta['event_format'], 'league');;
-	$league = $this->nvl($event_meta['league'], -1);;
-	$season = $this->nvl($event_meta['season'], -1);
-	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
+	$event_format = sp_nvl($event_meta['event_format'], 'league');;
+	$league = sp_nvl($event_meta['league'], -1);;
+	$season = sp_nvl($event_meta['season'], -1);
+	$date_format = sp_nvl($event_meta['date_format'],'yyyy/mm/dd');
 
 	// Get labels from result and performance post types
 	$result_labels = sp_get_var_labels( 'sp_result' );
@@ -384,7 +376,7 @@ function import_matches_r( $array = array(), $event_meta = array(), $columns = a
 	$matchImportIdx += 2;
 	endwhile;
 	$mc = sizeof($matches);
-	//$this->Trace('processing matches', $mc);
+	//sp_trace('processing matches', $mc);
 
 	$import_data['season'] = $season;
 	$import_data['league'] = $league;
@@ -416,7 +408,7 @@ function mr_usepseudo(){
 	while ( $q->have_posts() ) : 
 		if(mt_rand(0,1)==0 || true){
 			$p = $q->the_post();
-			$this->Trace('the_post',$p);
+			sp_trace('the_post',$p);
 			$m = get_post_meta($p, 'sp_metrics');
 			$m['usepseudo'] = 'Y';
 			update_post_meta($p->ID,'sp_metrics', $m);
@@ -428,7 +420,7 @@ function upsert_match($match, $event_format, $league, $season){
 		$match_check = array_filter( $match );
 		if ( empty( $match_check ) ) return null;
 		$match_hash = $this->match_hash($match);
-		//$this->Trace('match_hash', $match_hash);
+		//sp_trace('match_hash', $match_hash);
 
 		global $post;
 		$cc_args = array(
@@ -448,8 +440,8 @@ function upsert_match($match, $event_format, $league, $season){
 			$events_q->the_post();
 			$match_id = $post->ID;
 
-			//$this->Trace('ev', $post);
-			$this->Trace('match skipped', $match_hash);
+			//sp_trace('ev', $post);
+			sp_trace('match skipped', $match_hash);
 			$this->skipped++;
 			return null;
 		else:
@@ -457,11 +449,11 @@ function upsert_match($match, $event_format, $league, $season){
 
 			// Insert event
 			$match_id = wp_insert_post( $args );
-			//$this->Trace('match_id created', $match_id);
+			//sp_trace('match_id created', $match_id);
 			update_post_meta( $match_id, 'sp_event_hash', $match_hash );
 		endif;
-	//$this->Trace('match', $match);
-	//$this->Trace('match_hash', $match_hash);
+	//sp_trace('match', $match);
+	//sp_trace('match_hash', $match_hash);
 	// Define post type args
 
 
@@ -555,7 +547,7 @@ function match_upsert(&$match){
 	// $match_check = array_filter( $match );
 	// if ( empty( $match_check ) ) continue;
 	$match_hash = $this->match_hash($match);
-	//$this->Trace('match_hash', $match_hash);
+	//sp_trace('match_hash', $match_hash);
 
 	global $post;
 	$cc_args = array(
@@ -572,8 +564,8 @@ function match_upsert(&$match){
 		$events_q->the_post();
 		$match_id = $post->ID;
 
-		//$this->Trace('ev', $post);
-		$this->Trace('match skipped', $match_hash);
+		//sp_trace('ev', $post);
+		sp_trace('match skipped', $match_hash);
 		$this->skipped++;
 		return null;
 	else:
@@ -581,7 +573,7 @@ function match_upsert(&$match){
 
 		// Insert event
 		$match_id = wp_insert_post( $args );
-		//$this->Trace('match_id created', $match_id);
+		//sp_trace('match_id created', $match_id);
 		update_post_meta( $match_id, 'sp_event_hash', $match_hash );
 	endif;
 
@@ -620,7 +612,7 @@ function match_upsert(&$match){
 
 function commit_import($import_data = array()){
 	//players
-	//$this->Trace('import_data', $import_data);
+	//sp_trace('import_data', $import_data);
 	$league = $import_data['league'];
 	$season = $import_data['season'];
 	foreach ($import_data['matches'] as $match_hash => $match) {
@@ -634,8 +626,8 @@ function commit_import($import_data = array()){
 			$this->team_upsert($team_match);
 			$team_id = $team_match['id'];
 
-			// $this->Trace('match_id',$match_id);
-			// $this->Trace('team_id',$team_id);
+			// sp_trace('match_id',$match_id);
+			// sp_trace('team_id',$team_id);
 
 			// Update event results
 			//$event_results = array();
@@ -745,10 +737,10 @@ function import_matches( $array = array(), $event_meta = array(), $columns = arr
 
 	$rows = array_chunk( $array, 8 );//sizeof( $columns )
 
-	$event_format = $this->nvl($event_meta['event_format'], 'league');;
-	$league = $this->nvl($event_meta['league'], -1);;
-	$season = $this->nvl($event_meta['season'], -1);
-	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
+	$event_format = sp_nvl($event_meta['event_format'], 'league');;
+	$league = sp_nvl($event_meta['league'], -1);;
+	$season = sp_nvl($event_meta['season'], -1);
+	$date_format = sp_nvl($event_meta['date_format'],'yyyy/mm/dd');
 
 	// Get labels from result and performance post types
 	$result_labels = sp_get_var_labels( 'sp_result' );
@@ -777,14 +769,14 @@ function import_matches( $array = array(), $event_meta = array(), $columns = arr
 	$matchImportIdx += 2;
 	endwhile;
 	$mc = sizeof($matches);
-	//$this->Trace('matches',$matches);
+	//sp_trace('matches',$matches);
 
 	foreach ( $matches as $match ):
 
 		$match_check = array_filter( $match );
 		if ( empty( $match_check ) ) continue;
 		$match_hash = $this->match_hash($match);
-		//$this->Trace('match_hash', $match_hash);
+		//sp_trace('match_hash', $match_hash);
 
 		global $post;
 		$cc_args = array(
@@ -804,8 +796,8 @@ if($events_q->have_posts()):
 	$events_q->the_post();
 	$match_id = $post->ID;
 
-	//$this->Trace('ev', $post);
-	$this->Trace('match skipped', $match_hash);
+	//sp_trace('ev', $post);
+	sp_trace('match skipped', $match_hash);
 	$this->skipped++;
 	continue;
 else:
@@ -813,11 +805,11 @@ else:
 
 	// Insert event
 	$match_id = wp_insert_post( $args );
-	$this->Trace('match_id created', $match_id);
+	sp_trace('match_id created', $match_id);
 	update_post_meta( $match_id, 'sp_event_hash', $match_hash );
 endif;
-	//$this->Trace('match', $match);
-	//$this->Trace('match_hash', $match_hash);
+	//sp_trace('match', $match);
+	//sp_trace('match_hash', $match_hash);
 	// Define post type args
 
 
@@ -893,7 +885,7 @@ endif;
 			add_post_meta( $match_id, 'sp_player', 0 );
 		endif;
 
-//$this->Trace('team_match_data',$team_match_data);
+//sp_trace('team_match_data',$team_match_data);
 		list($player1_name, $player2_name) = $team_match_data['players'];
 
 		$p1m = $this->player_meta($match, $player1_name);
@@ -958,8 +950,8 @@ $ap = 111;
 		// 	$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
 		// );
 
-		// $this->Trace('p',$players[ $team_id ]);
-		// $this->Trace('k',$k);
+		// sp_trace('p',$players[ $team_id ]);
+		// sp_trace('k',$k);
 		// Get existing results
 		$event_results = get_post_meta( $match_id, 'sp_results', true );
 
@@ -973,8 +965,8 @@ $ap = 111;
 
 		$outcome_slug = null;
 		$outcome = $team_match_data['outcomeLabel'];
-		//$this->Trace('team_name', $team_name);
-		//$this->Trace('outcomeLabel', $outcome);
+		//sp_trace('team_name', $team_name);
+		//sp_trace('outcomeLabel', $outcome);
 		
 
 		// Get or insert outcome
@@ -1010,7 +1002,7 @@ $ap = 111;
 
 	endforeach;
 	$all_points = 0;
-//$this->Trace('$players_b', $players);
+//sp_trace('$players_b', $players);
 	foreach ($players as $team) {
 		foreach ($team as $team_player) {
 			$all_points += $team_player['tpf'];
@@ -1037,17 +1029,16 @@ $ap = 111;
 
 	// Add player performance to last event if available
 	if ( isset( $match_id ) && isset( $players ) && sizeof( $players ) > 0 ):
-		$this->Trace('players', $players);
+		sp_trace('players', $players);
 		update_post_meta( $match_id, 'sp_players', $players );
 	endif;
 	
 	$positions = array();
 	$all_positions = array(58=>'MS',59=>'WS', 60=>'XD',61=>'MD',62=>'WD');
 	$p = array(array_search($match['matchSection'], $all_positions));
-	$this->Trace('mpos', $p);
+	sp_trace('mpos', $p);
 	if($p)
 		wp_set_object_terms( $match_id, $p, 'sp_position', true );
-	//die();
 
 
 	$this->imported++;
@@ -1218,23 +1209,23 @@ function random_two_teams($players, $grade, $section, &$excluded){
 	$team_y = $pc['name']. '|' .$pd['name'];
 	$teams_in_match[$team_y] = array($pc, $pd);
 	if($pa['name'] == null){
-		$this->Trace('pa', $excluded);
+		sp_trace('pa', $excluded);
 		die();
 	}
 	if($pb['name'] == null){
-		$this->Trace('pb', $excluded);
+		sp_trace('pb', $excluded);
 		die();
 	}
 	if($pc['name'] == null){
-		$this->Trace('pc', $excluded);
+		sp_trace('pc', $excluded);
 		die();
 	}
 	if($pd['name'] == null){
-		$this->Trace('pd', $excluded);
+		sp_trace('pd', $excluded);
 		die();
 	}
 	if(team_x == $team_y){
-		$this->Trace('team_x', $team_x);
+		sp_trace('team_x', $team_x);
 		die();
 	}
 	return $teams_in_match;
@@ -1264,9 +1255,9 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		'venue'=>'Baldoyle', 
 		'formatGame' => '21',
 		'formatMatch' => '3',
-		'grades'=>array(3,6,8),//
-		'sections'=>array( 'WD','XD' ,'MD'),
-		)// 
+		'grades'=>array(3),//,6,8
+		'sections'=>array( 'WD'),
+		)// ,'XD' ,'MD'
 	//more
 	);
 	$seasons = array(2018);//, 2017, 2018
@@ -1300,13 +1291,13 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		array_push($teams_in_alltimes, array($season => $teams_in_season));
 	endforeach;
 
-	//$this->Trace('teams_in_alltimes', $teams_in_alltimes);
+	//sp_trace('teams_in_alltimes', $teams_in_alltimes);
 	$raw_import = array();
 	foreach ($teams_in_alltimes as $season => $teams_in_season) {
 		foreach ($teams_in_season as $event_title => $teams_in_eventX) {
 			foreach ($teams_in_eventX as $p => $q) {
 				foreach ($q as $event_label => $teams_in_event) {
-					//$this->Trace('event_label', $event_label);
+					//sp_trace('event_label', $event_label);
 					foreach ($teams_in_event as $event_sections) {
 						$format = $annual_events[$event_label]['formatMatch'];
 						$max = $annual_events[$event_label]['formatGame'];
@@ -1314,8 +1305,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 							$isMatchFirstRow = true;
 							$points_imploded = $this->match_points_imploded($format, $max);
 							foreach ($section_teams as $teamLabel => $team) {
-								//$this->Trace('teamLabel', $teamLabel);
-								//$this->Trace('section_teams', $section_teams);
+								//sp_trace('teamLabel', $teamLabel);
+								//sp_trace('section_teams', $section_teams);
 //2018/12/29,Baldoyle,8,MD,A|B,21|12|21
 //,,,,E|F,15|21|19
 								if($isMatchFirstRow){
@@ -1342,8 +1333,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		}
 	}
 
-	//$this->Trace('raw_import', $raw_import);
-	//$this->Trace('file_import', $array);
+	//sp_trace('raw_import', $raw_import);
+	//sp_trace('file_import', $array);
 	$league = $annual_events['Christmas Bonanza']['league'];
 	$season = $seasons[0];
 	//$annual_events['Christmas Bonanza']['venue']
@@ -1356,10 +1347,9 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->imported = $this->skipped = 0;
-	$aa = array('k1' => '123');
-	sp_trace('aa', $aa, true, true);
+	//$aa = array('k1' => '123');
+	//sp_trace('aa', $aa, true, true);
 	//$this->mr_usepseudo();
-	//die();
 	// if ( ! is_array( $array ) || ! sizeof( $array ) ):
 	// 	$this->footer();
 	// 	die();
@@ -1390,7 +1380,7 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 		 */
 		function import_end() {
 			$import_end = array('imported' => $this->imported, 'skipped' => $this->skipped);
-			$this->Trace('import_end',$import_end);
+			sp_trace('import_end',$import_end);
 			echo '<p>' . __( 'All done!', 'sportspress' ) . ' <a href="' . admin_url('edit.php?post_type=sp_event') . '">' . __( 'View Events', 'sportspress' ) . '</a>' . '</p>';
 
 			do_action( 'import_end' );

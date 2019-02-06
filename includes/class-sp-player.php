@@ -13,7 +13,7 @@
 class SP_Player extends SP_Custom_Post {
 // public function get_label(){
 // 	$m = $this->metrics(false);
-// 		//error_log("m:" . var_export($m, true));
+// 		//sp_trace("m", $m);
 
 // 	return $m['usePseudo'] == 'Y' ? $m['Pseudo'] : $this->post->post_title;
 // }
@@ -874,7 +874,7 @@ class SP_Player extends SP_Custom_Post {
 			endif;
 			
 			$merged[0] = array_merge( $labels, $columns );
-	//error_log("merged:" . var_export($merged, true));
+	//sp_trace("merged", $merged);
 			return $merged;
 		endif;
 	}

@@ -42,7 +42,7 @@ class SP_Player_List extends SP_Secondary_Post {
 	 * @return array
 	 */
 	public function data( $admin = false, $leagues = null, $seasons = null, $team_id = null ) {
-		//error_log("data:" . var_export($leagues, true));
+		//sp_trace("data", $leagues);
 		if ( !is_null( $leagues ) && '0' != $leagues ) {
 			$league_ids = explode( ",", $leagues );
 		}else{
@@ -178,7 +178,7 @@ class SP_Player_List extends SP_Secondary_Post {
 				);
 			endif;
 			$args = apply_filters( 'sportspress_player_list_args', $args, $team );
-//error_log("argsf:" . var_export($args, true));
+//sp_trace("argsf", $args);
 // $args = array (
 //   'post_type' => 'sp_player',
 //   'numberposts' => -1,
@@ -356,11 +356,11 @@ class SP_Player_List extends SP_Secondary_Post {
 
 		$diff = array_diff( $this->columns, $ordered_columns );
 		$this->columns = array_merge( $diff, $ordered_columns );
-//error_log("player_ids:" . var_export($player_ids, true));
+//sp_trace("player_ids",$player_ids);
 		foreach ( $player_ids as $player_id ):
 			if ( ! $player_id )
 				continue;
-//error_log("player_id1:" . var_export($player_id, true));
+//sp_trace("player_id1", $player_id);
 			// Initialize player totals
 			$totals[ $player_id ] = array( 'eventsattended' => 0, 'eventsplayed' => 0, 'eventsstarted' => 0, 'eventssubbed' => 0, 'eventminutes' => 0 );
 
@@ -480,7 +480,7 @@ class SP_Player_List extends SP_Secondary_Post {
 
 		$args = apply_filters( 'sportspress_list_data_event_args', $args );
 		$section = 'x';
-		//error_log("position_ids:" . var_export($position_ids, true));
+		//sp_trace("position_ids"$position_ids);
 		if($position_ids[0] == 58):
 			$section = 'MD';
 		elseif($position_ids[0] == 59):
@@ -534,7 +534,7 @@ class SP_Player_List extends SP_Secondary_Post {
     );
 		$args['meta_query'][] = $event_section;
 	}
-		//error_log("args:" . var_export($args, true));
+		//sp_trace("args",$args);
 		$events = get_posts( $args );
 
 		// Remove range filters
@@ -543,7 +543,7 @@ class SP_Player_List extends SP_Secondary_Post {
 
 		// Event loop
 		$es = sizeof($events);
-		//error_log("Nevents:" . var_export($es, true));
+		//error_log("Nevents",$es);
 		foreach ( $events as $i => $event ):
 			if($event == null) continue;
 
@@ -558,9 +558,9 @@ class SP_Player_List extends SP_Secondary_Post {
 			$minutes = get_post_meta( $event->ID, 'sp_minutes', true );
             
 
-            // error_log("player_id:" . var_export($player_id, true));
-            // error_log("totals:" . var_export($totals, true));
-            // error_log("eventFactors:" . var_export($eventFactors, true));
+            // sp_trace("player_id", $player_id);
+            // sp_trace("totals", $totals);
+            // sp_trace("eventFactors", $eventFactors);
             
             if($eventFactors == null || $player_id == null || $totals[ $player_id ] == null) continue;
             $totals[ $player_id ] = array_merge($totals[ $player_id ], $eventFactors);

@@ -64,6 +64,13 @@ if( ! function_exists( 'sp_trace' ) ) {
 		if($die) die();
 	}
 }
+if( ! function_exists( 'sp_nvl' ) ) {
+function sp_nvl($val, $replace)
+{
+    if( is_null($val) || $val === '' )  return $replace;
+    else                                return $val;
+}}
+
 /**
  * Get templates passing attributes and including the file.
  *
