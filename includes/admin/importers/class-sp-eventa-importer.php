@@ -672,6 +672,7 @@ function commit_import($import_data = array()){
 				add_post_meta( $match_id, 'sp_player', 0 );
 			endif;
 
+			$all_points = 0;
 			foreach ($team_match['players_o'] as $player_key => $player_value) {
 				//array_push($team_match['players_merged'], $this->player_upsert($player_value));
 				$this->player_upsert($player_value);
@@ -923,6 +924,17 @@ endif;
 			+ $team_match_data['results']['gdp']
 			+ $team_match_data['results']['gep']
 			) / 2;
+$ap = 111;
+			//alt formula
+			$tpf = 
+				      $team_match_data['results']['gap'] 
+					+ $team_match_data['results']['gbp']
+					+ $team_match_data['results']['gcp']
+					+ $team_match_data['results']['gdp']
+					+ $team_match_data['results']['gep'];
+			$players[ $team_id ]['tpf'] = $tpf;		
+
+
 		if($team_match_data['outcomeLabel']=='Won'):
 			$ap = $ap * 1.4;
 		elseif($team_match_data['outcomeLabel']=='Draw'):
@@ -931,11 +943,11 @@ endif;
 		$ap = intval($ap);
 		$k = array();
 		if($meta1['player_id'] != null):
-			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap);
+			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap, 'tpf'=>$tpf);//
 		endif;
 
 		if($meta2['player_id'] != null):
-			$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap);
+			$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap, 'tpf'=>$tpf);//
 		endif;
 
 		$players[ $team_id ] = $k;
@@ -1002,13 +1014,35 @@ endif;
 		
 
 	endforeach;
+	$all_points = 0;
+//$this->Trace('$players_b', $players);
+	foreach ($players as $team) {
+		foreach ($team as $team_player) {
+			$all_points += $team_player['tpf'];
+		}	
+	}
+	// foreach ($players as $team) {
+	// 	$all_points += $team['tpf'];
+	// }
+	foreach ($players as $team) {
+		$t= ($team['outcome_label'] == 'Won') 
+			? max(0.51, $team['tpf']/$all_points)
+			: min(0.49, $team['tpf']/$all_points)
+		;
+
+		$ap = (11 - $match['matchGrade']) * 1.05 * 3 * 210 * $t;
+		foreach ($team as $team_player) {
+			$team_player['ap'] = $ap;
+		}
+	}
+
 	update_post_meta( $match_id, 'sp_specs', array('grade'=> $match['matchGrade'], 'section'=> $match['matchSection'] ));//winfactor lostfactor
 
 	update_post_meta( $match_id, 'sp_eventsection', $match['matchSection'] );//winfactor lostfactor
 
 	// Add player performance to last event if available
 	if ( isset( $match_id ) && isset( $players ) && sizeof( $players ) > 0 ):
-		//$this->Trace('pperf', $players);
+		$this->Trace('players', $players);
 		update_post_meta( $match_id, 'sp_players', $players );
 	endif;
 	
