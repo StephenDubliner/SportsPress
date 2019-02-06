@@ -1260,6 +1260,12 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 		)// ,'XD' ,'MD'
 	//more
 	);
+	//settings.php
+	define('BR_DEPLOYMENT', 'LIVE');//todo use it
+	//include('settings.php')
+	if(defined(BR_DEPLOYMENT) && BR_DEPLOYMENT == 'PROD'){
+		$a = array( 'WD', 'XD', 'MD');
+	}
 	$seasons = array(2018);//, 2017, 2018
 	$all_players = $this->random_players();
 	$teams_in_alltimes = array();
