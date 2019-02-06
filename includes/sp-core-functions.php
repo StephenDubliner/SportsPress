@@ -53,6 +53,17 @@ function sp_get_template_part( $slug, $name = '' ) {
 	}
 }
 
+if( ! function_exists( 'sp_trace' ) ) {
+	function sp_trace($label, $o, $backtrace = false, $die = false){
+		$val = $$varname;
+		error_log("$label:" . var_export($o, true));
+		if($backtrace){
+			$backtrace = debug_backtrace();
+			error_log('backtrace:' . var_export(array_slice($backtrace, 1), true));
+		}
+		if($die) die();
+	}
+}
 /**
  * Get templates passing attributes and including the file.
  *
