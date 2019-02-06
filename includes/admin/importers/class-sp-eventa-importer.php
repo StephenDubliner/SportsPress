@@ -216,12 +216,7 @@ function build_match($commonDetails, $rowA, $rowB){
 }
 
 function trace($label, $o){
-	//print_r('<br/>'.$label);
-	//print_r($o);
-	//print_r('<br/>');
-	//error_log(print_r("$label: $o", true));
 	error_log("$label:" . var_export($o, true));
-	//error_log('q'. print_r($wpdb->queries, true));
 }
 
 function link_player($player, $league, $season, $match_id, $team_id){
@@ -1327,6 +1322,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->imported = $this->skipped = 0;
+	$aa = array('k1' => '123');
+	sp_trace('aa', $aa, true, true);
 	//$this->mr_usepseudo();
 	//die();
 	// if ( ! is_array( $array ) || ! sizeof( $array ) ):
