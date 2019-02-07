@@ -912,18 +912,6 @@ endif;
 			+ $team_match_data['results']['gdp']
 			+ $team_match_data['results']['gep']
 			) / 2;
-$ap = 111;
-			//alt formula
-			$tpf = 
-				      $team_match_data['results']['gap'] 
-					+ $team_match_data['results']['gbp']
-					+ $team_match_data['results']['gcp']
-					+ $team_match_data['results']['gdp']
-					+ $team_match_data['results']['gep'];
-	//sp_trace('$players[ $team_id ]', $players[ $team_id ]);
-					//$players[ $team_id ] = array_merge($players[ $team_id ], array('tpf' => $tpf, outcomeLabel => $team_match_data['outcomeLabel']));
-			// $players[ $team_id ]['tpf'] = $tpf;		
-			// $players[ $team_id ]['outcomeLabel'] = $team_match_data['outcomeLabel'];	
 
 		if($team_match_data['outcomeLabel']=='Won'):
 			$ap = $ap * 1.4;
@@ -931,17 +919,29 @@ $ap = 111;
 			$ap = $ap * 1.1;
 		endif;
 		$ap = intval($ap);
-		$k = array();
+		//$k = array();
+		$players[ $team_id ] = array();
 		if($meta1['player_id'] != null):
-			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap);//, 'tpf'=>$tpf
+			//$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap);
+			$players[ $team_id ][$meta1['player_id']] = array('number' => $meta1['player_number'], 'ap'=> $ap);
 		endif;
 
 		if($meta2['player_id'] != null):
-			$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap);//, 'tpf'=>$tpf
+			//$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap);
+			$players[ $team_id ][$meta2['player_id']] = array('number' => $meta2['player_number'], 'ap'=> $ap);
 		endif;
 
-		$players[ $team_id ] = $k;
-		$team_terms[ $team_id ] = array('tpf'=>$tpf, 'outcomeLabel'=> $team_match_data['outcomeLabel']);
+		//$players[ $team_id ] = $k;
+
+		//alt formula
+		$tpf = 
+		      $team_match_data['results']['gap'] 
+			+ $team_match_data['results']['gbp']
+			+ $team_match_data['results']['gcp']
+			+ $team_match_data['results']['gdp']
+			+ $team_match_data['results']['gep'];
+
+		$team_terms[ $team_id ] = array('tpf' => $tpf, 'outcomeLabel'=> $team_match_data['outcomeLabel']);
 
 		// Get existing results
 		$event_results = get_post_meta( $match_id, 'sp_results', true );
@@ -1025,7 +1025,7 @@ $ap = 111;
 	$positions = array();
 	$all_positions = array(58=>'MS',59=>'WS', 60=>'XD',61=>'MD',62=>'WD');
 	$p = array(array_search($match['matchSection'], $all_positions));
-	sp_trace('mpos', $p);
+	//sp_trace('mpos', $p);
 	if($p)
 		wp_set_object_terms( $match_id, $p, 'sp_position', true );
 
