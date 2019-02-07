@@ -1,3 +1,5 @@
+# Formulas  
+
 ## 1. Basic formula based on game points for the player
 Sum all game points player played scaled by the division factor  
 n - number of game results in which player participated  
@@ -95,3 +97,38 @@ note reward varies on games format:
  15: 150  
  21: 210  
  5% for game with setting  
+
+## GDPR Todo:
+- [ ] support for obtaining explicit and informed consent on collecting personal data
+- [ ] support revoking consent to stop collecting data
+- [ ] support revoking consent to erase collected data
+- [ ] support all user data request
+- [ ] publish Terms of Service
+- [ ] publish Privacy Policy : showing what data is going to be stored, how it is going to be used/processed, reasons to collect and store
+- [ ] publish Security Policy (data protection policy) : how security is implemented
+- [ ] support data breach notification
+- [ ] identify roles: data controllers, data processors
+- [ ] review all plugins are compatible with GDPR
+- [ ] verify no checkbox that’s selected by default as a consent
+## Nice to have:  
+- [ ] request GDPR compilance audit (Security Audit Log plugin?)
+
+# General Work Back-log
+- [x] generic player photo
+- [x] preview release
+- [x] Azure deployment
+- [x] fix Matches view
+- [x] basic calendar of recorded matches
+- [x] Basic portal layout: news, about, ranks, matches, leagues, players
+- [x] Support pseudonym - minimum basic: no FN on player details, no FN on rank, no FN on player team
+- [x] fix match day
+- [x] fix missing zeroes in the results
+- [x] most optimal math formula in place
+- [x] Test data 100+
+- [x] More columns: WL: matches, games, ratio, grade, gender
+- [x] prevent match duplicates on import
+- [x] support for unknown player in match result
+- [x] support 1-5 games/match
+- [x] division biased rank formula in place
+- [x] Teams names creation
+- [x] Outcome sorted  

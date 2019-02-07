@@ -102,14 +102,17 @@ function delete_all_of_type() {
                 'post_type'         => $post_type,
                 //'author'            => $author_id,
                 'fields'            => 'ids', // Only get post ID's
+                'meta_key'         => '_sp_import',
+                'meta_value'       => 1
             )
         );
-
+        $delete_count = 0;
         foreach ( $posts_to_delete as $post ) {
             //wp_trash_post( $post_from_author, false); // Set to False if you want to send them to Trash.
             wp_delete_post( $post, true);
+            $delete_count++;
         }
-        $delete_count = sizeof($post_to_delete);
+        //$delete_count = sizeof($post_to_delete);
         sp_trace('delete_count', $delete_count);
 }
 
@@ -240,9 +243,7 @@ $pseudo = $player['pseudo'];//'PS-' . $player1_name;
 	else:
 //sp_trace('new player',$player1_name);
 		// Insert player
-$post_title = 
-//wp_strip_all_tags($pseudo);
-wp_strip_all_tags( $player1_name );
+		$post_title = wp_strip_all_tags( $player1_name );
 		$player1_id = wp_insert_post( array( 'post_type' => 'sp_player', 'post_status' => 'publish', 'post_title' => $post_title) );
 
 		// Flag as import
@@ -250,8 +251,6 @@ wp_strip_all_tags( $player1_name );
 
 		// Update number
 		update_post_meta( $player1_id, 'sp_number', $player1_id );
-		//if($player['gender'] == 'F')
-			//update_post_meta( $player1_id, 'sp_position', array(59) );
 		
 		update_post_meta( $player1_id, 'sp_nationality', array_rand(
 			//array('irl', 'fra', 'usa', 'ita', 'ger')
@@ -1005,7 +1004,9 @@ endif;
 			: min(0.49, $term['tpf']/$all_points)
 		;
 
-		$ap = intval((11 - $match['matchGrade']) * 1.05 * 3 * 210 * $t / 2);
+//$ap = intval((11 - $match['matchGrade']) * 1.05 * 3 * 210 * $t / 2);
+		$setting = $match['formatSetting'] == true ? 1.05 : 1;
+		$ap = intval((11 - $match['matchGrade']) * $setting * intval($match['formatMatch']) * intval($match['formatGame']) * 10 * $t / 2);
 		//sp_trace('ap',$ap);
 		foreach ($players[$team_id] as $player_id => $player_dto) {
 			$players[$team_id][$player_id]['ap'] = $ap;
@@ -1237,15 +1238,48 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$annual_events = array(
 	'Christmas Bonanza' => array(
-		'title'=>'Christmas Bonanza', 
-		'date'=>'2018/12/29', 
-		'league'=>'Bonanza', 
-		'venue'=>'Baldoyle', 
+		'title'=>'Christmas Bonanza',
+		'date'=>'2018/12/29',
+		'league'=>'Bonanza',
+		'venue'=>'Baldoyle',
 		'formatGame' => '21',
+		'formatSetting' => true,
 		'formatMatch' => '3',
 		'grades'=>array(3),//,6,8
-		'sections'=>array( 'WD'),
-		)// ,'XD' ,'MD'
+		'sections'=>array( 'WD'),// ,'XD' ,'MD'
+		),
+/*
+	'Inter County' => array(
+		'title'=>'Inter County',
+		'date'=>'2019/02/10',
+		'league'=>'CAC',
+		'venue'=>null,
+		'formatGame' => '21',
+		'formatMatch' => '3',
+		'grades'=>array(2, 4, 6, 8, 10),
+		'sections'=>array('WD', 'XD' ,'MD'),
+		),
+	'St Valentines' => array(
+		'title'=>'St Valentines',
+		'date'=>'2019/02/16',
+		'league'=>'Bonanza',
+		'venue'=>'Baldoyle',
+		'formatGame' => '21',
+		'formatMatch' => '2',
+		'grades'=>array(3),//,6,8
+		'sections'=>array( 'XD'),
+		),
+	'Good Friday' => array(
+		'title'=>'Good Friday',
+		'date'=>'2019/04/01',
+		'league'=>'Bonanza',
+		'venue'=>'Baldoyle',
+		'formatGame' => '21',
+		'formatMatch' => '2',
+		'grades'=>array(3),//,6,8
+		'sections'=>array('WD', 'XD', 'MD'),
+		),
+	*/
 	//more
 	);
 	//settings.php
@@ -1358,7 +1392,7 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->delete_all_of_type();
 	//$this->import_matches($array, $event_meta, $columns);
 
-	$this->import_auto_gen($array, $event_meta, $columns);
+	//$this->import_auto_gen($array, $event_meta, $columns);
 
 	// Show Result
 	echo '<div class="updated settings-error below-h2"><p>
