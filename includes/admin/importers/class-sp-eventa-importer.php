@@ -836,6 +836,7 @@ endif;
 	wp_set_object_terms( $match_id, $match['venue'], 'sp_venue', false );
 
 	$players = array();
+	$team_terms = array();
 	foreach ( $match['teams'] as $team_name => $team_match_data ):
 		//build player dtos 
 
@@ -919,8 +920,10 @@ $ap = 111;
 					+ $team_match_data['results']['gcp']
 					+ $team_match_data['results']['gdp']
 					+ $team_match_data['results']['gep'];
-			$players[ $team_id ]['tpf'] = $tpf;		
-
+	//sp_trace('$players[ $team_id ]', $players[ $team_id ]);
+					//$players[ $team_id ] = array_merge($players[ $team_id ], array('tpf' => $tpf, outcomeLabel => $team_match_data['outcomeLabel']));
+			// $players[ $team_id ]['tpf'] = $tpf;		
+			// $players[ $team_id ]['outcomeLabel'] = $team_match_data['outcomeLabel'];	
 
 		if($team_match_data['outcomeLabel']=='Won'):
 			$ap = $ap * 1.4;
@@ -930,28 +933,16 @@ $ap = 111;
 		$ap = intval($ap);
 		$k = array();
 		if($meta1['player_id'] != null):
-			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap, 'tpf'=>$tpf);//
+			$k[$meta1['player_id']] =  array('number' => $meta1['player_number'], 'ap'=> $ap);//, 'tpf'=>$tpf
 		endif;
 
 		if($meta2['player_id'] != null):
-			$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap, 'tpf'=>$tpf);//
+			$k[$meta2['player_id']] =  array('number' => $meta2['player_number'], 'ap'=> $ap);//, 'tpf'=>$tpf
 		endif;
 
 		$players[ $team_id ] = $k;
+		$team_terms[ $team_id ] = array('tpf'=>$tpf, 'outcomeLabel'=> $team_match_data['outcomeLabel']);
 
-		// update_post_meta( $meta1['player_id'], 'sp_statistics', $k[$meta1['player_id']] );
-		// update_post_meta( $meta2['player_id'], 'sp_statistics', $k[$meta2['player_id']] );
-		
-		//update_post_meta( 918, 'sp_players', $k[$meta1['player_id']] );
-		//update_post_meta( 918, 'sp_players', $k[$meta2['player_id']] );
-
-		// array(
-		// 	$meta1['player_id'] => array('number' => $meta1['player_number'], 'ap'=> $ap),
-		// 	$meta2['player_id'] => array('number' => $meta2['player_number'], 'ap'=> $ap)
-		// );
-
-		// sp_trace('p',$players[ $team_id ]);
-		// sp_trace('k',$k);
 		// Get existing results
 		$event_results = get_post_meta( $match_id, 'sp_results', true );
 
@@ -1002,24 +993,22 @@ $ap = 111;
 
 	endforeach;
 	$all_points = 0;
-//sp_trace('$players_b', $players);
-	foreach ($players as $team) {
-		foreach ($team as $team_player) {
-			$all_points += $team_player['tpf'];
-		}	
+//sp_trace('players_b', $players);
+
+	foreach ($team_terms as $term) {
+		$all_points += $term['tpf'];//total scored game points for
 	}
-	// foreach ($players as $team) {
-	// 	$all_points += $team['tpf'];
-	// }
-	foreach ($players as $team) {
-		$t= ($team['outcome_label'] == 'Won') 
-			? max(0.51, $team['tpf']/$all_points)
-			: min(0.49, $team['tpf']/$all_points)
+	//sp_trace('team_terms', $team_terms);
+	foreach ($team_terms as $team_id => $term) {
+		$t= ($team['outcomeLabel'] == 'Won') 
+			? max(0.51, $term['tpf']/$all_points)
+			: min(0.49, $term['tpf']/$all_points)
 		;
 
-		$ap = (11 - $match['matchGrade']) * 1.05 * 3 * 210 * $t;
-		foreach ($team as $team_player) {
-			$team_player['ap'] = $ap;
+		$ap = intval((11 - $match['matchGrade']) * 1.05 * 3 * 210 * $t / 2);
+		//sp_trace('ap',$ap);
+		foreach ($players[$team_id] as $player_id => $player_dto) {
+			$players[$team_id][$player_id]['ap'] = $ap;
 		}
 	}
 
@@ -1039,7 +1028,6 @@ $ap = 111;
 	sp_trace('mpos', $p);
 	if($p)
 		wp_set_object_terms( $match_id, $p, 'sp_position', true );
-
 
 	$this->imported++;
 endforeach;
