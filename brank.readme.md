@@ -114,6 +114,7 @@ note reward varies on games format:
 - [ ] request GDPR compilance audit (Security Audit Log plugin?)
 
 # General Work Back-log
+- [ ] test support for singles MS, WS
 - [x] generic player photo
 - [x] preview release
 - [x] Azure deployment
