@@ -115,6 +115,7 @@ note reward varies on games format:
 
 # General Work Back-log
 - [ ] test support for singles MS, WS
+- [ ] auto outcome works as expected when results are partial
 - [x] generic player photo
 - [x] preview release
 - [x] Azure deployment

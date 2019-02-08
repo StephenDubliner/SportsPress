@@ -194,9 +194,9 @@ class SP_Meta_Box_Event_Results {
 
 				foreach ( $primary_results as $key => $value ) {
 					if ( ! array_key_exists( 'outcome', $results[ $key ] ) ) {
-						if ( $min == $value ) {
+						if ( $min == $value) {// && $min != $max && $max != 0
 							$outcomes = $lt_outcomes;
-						} elseif ( $max == $value ) {
+						} elseif ( $max == $value) {// && $min != $max && $max != 0 
 							$outcomes = $gt_outcomes;
 						} else {
 							$outcomes = $default_outcomes;
