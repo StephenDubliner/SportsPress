@@ -81,7 +81,9 @@ $i = 0;
 						if ( ! $player_id )
 							continue;
 
-						$name = get_the_title( $player_id );
+						$name = sp_pseudo_name($player_id);
+						if($name == null)
+							$name = get_the_title( $player_id );
 
 						if ( ! $name )
 							continue;

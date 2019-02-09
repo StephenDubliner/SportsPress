@@ -303,8 +303,20 @@ function sp_team_abbreviation( $post = 0, $forced = false ) {
 function sp_the_abbreviation( $post = 0, $forced = false ) {
 	echo sp_team_abbreviation( $post, $forced );
 }
+function sp_pseudo_name( $post = 0 ) {
+	$result = null;
+	$metrics = get_post_meta( $post, 'sp_metrics', true );
+	if($metrics && $metrics['usepseudo']=='Y' && $metrics['pseudo']!=''){
+		$result = $metrics['pseudo'];
+	}
 
+	return $result;
+}
 function sp_team_short_name( $post = 0 ) {
+	$result = sp_pseudo_name($post);
+	if(result != null)
+		return $result;
+
 	$short_name = get_post_meta( $post, 'sp_short_name', true );
 	if ( $short_name ) {
 		return $short_name;
