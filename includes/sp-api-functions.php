@@ -314,7 +314,7 @@ function sp_pseudo_name( $post = 0 ) {
 }
 function sp_team_short_name( $post = 0 ) {
 	$result = sp_pseudo_name($post);
-	if(result != null)
+	if($result != null)
 		return $result;
 
 	$short_name = get_post_meta( $post, 'sp_short_name', true );
