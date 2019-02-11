@@ -146,3 +146,4 @@ note reward varies on games format:
 - [x] division biased rank formula in place
 - [x] Teams names creation
 - [x] Outcome sorted  
+- [ ] Automate testing as in https://www.quora.com/What-are-the-best-PHP-testing-frameworks
