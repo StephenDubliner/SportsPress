@@ -114,13 +114,17 @@ note reward varies on games format:
 - [ ] request GDPR compilance audit (Security Audit Log plugin?)
 
 # General Work Back-log
-- [ ] test support for singles MS, WS
+- [x] test support for singles MS, WS
+- [ ] legal stuff T&C, Privacy, Security, GDPR
+- [ ] winning team in bold on brief match view
+- [ ] quick delete in native SQL call
+- [ ] importer view to add event fixtures in bulk
 - [ ] performance stats aggregated on the club / multi-team - PBL CAC
 - [ ] importer with input form for multi-team fixtures auto created
 - [ ] match details view tith push notofocations - autoupdating
 - [ ] match day friendly formatted in the UI
-- [ ] additional outcome retired
-- [ ] results entering view that records point by point sequence
+- [ ] additional outcome 'retired'
+- [ ] NBT results entering view that records point by point sequence
 - [ ] generic player avatars to choose from
 - [ ] generic team logos
 - [x] auto outcome works as expected when results are partial
