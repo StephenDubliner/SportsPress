@@ -156,3 +156,4 @@ note reward varies on games format:
 - [x] Teams names creation
 - [x] Outcome sorted  
 - [ ] Automate testing as in https://www.quora.com/What-are-the-best-PHP-testing-frameworks
+- [ ] Register http://brank.westeurope.cloudapp.azure.com/v1/wp-login.php?action=register
