@@ -120,7 +120,16 @@ note reward varies on games format:
 - [ ] quick delete in native SQL call
 - [ ] importer view to add event fixtures in bulk
 - [ ] performance stats aggregated on the club / multi-team - PBL CAC
-- [ ] importer with input form for multi-team fixtures auto created
+- [ ] team bulk input form
+- [ ] 	auto team name based on input template
+- [ ] 	league/competition
+- [ ] 	logo
+- [ ] 	players to link to the team
+- [ ] match bulk input form for
+- [ ] 	delete all checkbox
+- [ ] 	statics: MatchDay, event, venue, format, season
+- [ ] 	league/competition
+- [ ] 	pre-typed defautls based on the last record entered: section, grade
 - [ ] match details view tith push notofocations - autoupdating
 - [ ] match day friendly formatted in the UI
 - [ ] additional outcome 'retired'

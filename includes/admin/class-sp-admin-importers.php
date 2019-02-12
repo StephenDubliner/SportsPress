@@ -40,6 +40,11 @@ class SP_Admin_Importers {
 				'description' => __( 'Import <strong>badminton events</strong> from a csv file.', 'sportspress'),
 				'callback' => array( $this, 'events_importerB' ),
 			),
+			'sp_eventC_csv' => array(
+				'name' => __( 'SportsPress Badminton Events manual bulk', 'sportspress' ),
+				'description' => __( 'Import <strong>badminton events</strong> entered manually in bulk.', 'sportspress'),
+				'callback' => array( $this, 'events_importerC' ),
+			),			
 			'sp_event_csv' => array(
 				'name' => __( 'SportsPress Events (CSV)', 'sportspress' ),
 				'description' => __( 'Import <strong>events</strong> from a csv file.', 'sportspress'),
@@ -110,10 +115,32 @@ class SP_Admin_Importers {
 	/**
 	 * Add menu item
 	 */
+	public function events_importerC() {
+		$this->includes();
+
+	    require 'importers/class-sp-eventc-importer.php';
+
+	    // Dispatch
+	    $importer = new SP_EventC_Importer();
+
+		add_filter( 'http_request_timeout', array( $this, 'bump_request_timeout' ) );
+
+		if ( function_exists( 'gc_enable' ) )
+			gc_enable();
+
+		@set_time_limit(0);
+		@ob_flush();
+		@flush();
+	    $importer->table( null );
+	    //$importer->dispatch();
+	}
+
+	/**
+	 * Add menu item
+	 */
 	public function events_importerB() {
 		$this->includes();
 
-		//require 'importers/class-sp-eventa-importer.php';
 	    require 'importers/class-sp-eventb-importer.php';
 
 	    // Dispatch
