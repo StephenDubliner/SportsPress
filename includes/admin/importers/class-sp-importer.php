@@ -53,6 +53,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 				$this->delimiter = ',';
 
 			$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step'];
+			sp_trace('step',$step);
+
 			switch ( $step ):
 				case 0:
 					$this->greet();
@@ -81,8 +83,13 @@ if ( class_exists( 'WP_Importer' ) ) {
 				case 2:
 					check_admin_referer( 'import-upload' );
 					if ( isset( $_POST['sp_import'] ) ):
+						sp_trace('T_POST[sp_import]',$_POST['sp_import']);
+
 						$columns = array_filter( sp_array_value( $_POST, 'sp_columns', array( 'post_title' ) ) );
 						$this->import( $_POST['sp_import'], array_values( $columns ) );
+
+					else:
+						sp_trace('F_POST[sp_import]',$_POST['sp_import']);
 					endif;
 					break;
 			endswitch;

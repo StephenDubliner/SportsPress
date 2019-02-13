@@ -125,14 +125,18 @@ class SP_Admin_Importers {
 
 		add_filter( 'http_request_timeout', array( $this, 'bump_request_timeout' ) );
 
-		if ( function_exists( 'gc_enable' ) )
-			gc_enable();
+		// if ( function_exists( 'gc_enable' ) )
+		// 	gc_enable();
 
-		@set_time_limit(0);
-		@ob_flush();
-		@flush();
-	    $importer->table( null );
-	    //$importer->dispatch();
+		// @set_time_limit(0);
+		// @ob_flush();
+		// @flush();
+
+		// $_GET['step'] = 2
+	 //    $importer->table( null );
+	 //    $importer->footer();
+
+	    $importer->dispatch();
 	}
 
 	/**

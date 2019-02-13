@@ -34,6 +34,42 @@ if ( class_exists( 'WP_Importer' ) ) {
 // 	echo '<p><strong>' . __( 'custom handle_upload.', 'sportspress' ) . '</strong><br />';
 // 	return true;
 // }
+		function dispatch() {
+			$this->header();
+
+			if ( ! empty( $_POST['delimiter'] ) )
+				$this->delimiter = stripslashes( trim( $_POST['delimiter'] ) );
+
+			if ( ! $this->delimiter )
+				$this->delimiter = ',';
+
+			$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step'];
+			sp_trace('step',$step);
+
+			switch ( $step ):
+				case 0:
+					$this->greet();
+					//check_admin_referer( 'import-upload' );
+
+					$this->table( null );
+					break;
+				// case 1:
+				// 	break;
+				case 2:
+					check_admin_referer( 'import-upload' );
+					if ( isset( $_POST['sp_import'] ) ):
+						sp_trace('T_POST[sp_import]',$_POST['sp_import']);
+
+						$columns = array_filter( sp_array_value( $_POST, 'sp_columns', array( 'post_title' ) ) );
+						$this->import( $_POST['sp_import'], array_values( $columns ) );
+
+					else:
+						sp_trace('F_POST[sp_import]',$_POST['sp_import']);
+					endif;
+					break;
+			endswitch;
+			$this->footer();
+		}
 function table( $file ) {
 	global $wpdb;
 
@@ -124,7 +160,7 @@ function table( $file ) {
 
 function import( $array = array(), $columns = array( 'post_title' ) ) {
 	$this->imported = $this->skipped = 0;
-
+	sp_trace('import','Y');
 	// Get event format, league, and season from post vars
 	$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
 	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
@@ -165,7 +201,7 @@ function import( $array = array(), $columns = array( 'post_title' ) ) {
 			echo '<div class="narrow">';
 			echo '<p>' . __( 'Hi there! Choose a .csv file to upload, then click "Upload file and import".', 'sportspress' ).'</p>';
 			echo '<p>' . sprintf( __( 'Events need to be defined with columns in a specific order (3+ columns). <a href="%s">Click here to download a sample</a>.', 'sportspress' ), plugin_dir_url( SP_PLUGIN_FILE ) . 'dummy-data/events-sample.csv' ) . '</p>';
-			wp_import_upload_form( 'admin.php?import=sp_eventC_csv&step=1' );
+			//wp_import_upload_form( 'admin.php?import=sp_eventC_csv&step=1' );
 			echo '</div>';
 		}
 
