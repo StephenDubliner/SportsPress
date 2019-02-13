@@ -154,6 +154,10 @@ note reward varies on games format:
 - [x] support 1-5 games/match
 - [x] division biased rank formula in place
 - [x] Teams names creation
-- [x] Outcome sorted  
+- [x] Outcome sorted
+- [ ] support for cookies monit
+- [ ] support rank points re-calculation on already entered match
+- [ ] under construction solution
 - [ ] Automate testing as in https://www.quora.com/What-are-the-best-PHP-testing-frameworks
+	- [ ] processing inputs: player full name, tokenizing, match results constraints, player allowed sections, handling pseudos
 - [ ] Register http://brank.westeurope.cloudapp.azure.com/v1/wp-login.php?action=register
