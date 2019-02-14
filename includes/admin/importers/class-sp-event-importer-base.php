@@ -392,6 +392,19 @@ function teamNameFromPiped_initials($input){
 	return implode(' with ', $resultInitials);
 	//return 'Team '. md5($input);
 }
+function detect_separator($input){
+	$default_separator = '|';
+	$result = null;
+	if($input != null){
+		if(strpos($input, '.') !== false):
+			$result = '.';
+		elseif(strpos($input, '/') !== false):
+			$result = '/';
+		endif;
+	}
+
+	return sp_nvl($result, $default_separator);
+}
 function build_match_c($commonDetails, $rowA, $rowB){
 	$result = array();
 	$result['season'] = $commonDetails[5];
@@ -402,8 +415,9 @@ function build_match_c($commonDetails, $rowA, $rowB){
 	$result['matchGrade'] = sp_nvl($commonDetails[3], 11);
 
 	$result['teams'] = array();
-	$points_a = explode( '|', $rowA[1] );
-	$points_b = explode( '|', $rowB[1] );
+
+	$points_a = explode( this->(detect_separator($rowA[1])), $rowA[1] );
+	$points_b = explode( this->(detect_separator($rowB[1])), $rowB[1] );
 
 	$taTitle = $this->teamNameFromPiped_initials($rowA[0]);
 	$tbTitle = $this->teamNameFromPiped_initials($rowB[0]);
