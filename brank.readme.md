@@ -158,6 +158,7 @@ note reward varies on games format:
 - [ ] support for cookies monit
 - [ ] support rank points re-calculation on already entered match
 - [ ] under construction solution
+- [ ] game points input max 2 digits, min and max, autocomplete, sample inpit for points and players
 - [ ] Automate testing as in https://www.quora.com/What-are-the-best-PHP-testing-frameworks
 	- [ ] processing inputs: player full name, tokenizing, match results constraints, player allowed sections, handling pseudos
 - [ ] Register http://brank.westeurope.cloudapp.azure.com/v1/wp-login.php?action=register
