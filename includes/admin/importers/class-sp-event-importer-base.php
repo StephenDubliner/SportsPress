@@ -436,6 +436,8 @@ function build_match_c($commonDetails, $rowA, $rowB){
 
 	$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
 	$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
+	sp_trace('points_a', $points_a);
+	if($points_a[0] != 0):
 	$agw = 0;
 	$agl = 0;
 	foreach( $points_a as $gkey => $points ):
@@ -485,7 +487,9 @@ function build_match_c($commonDetails, $rowA, $rowB){
 		$result['teams'][$taTitle]['outcomeLabel'] = 'Lost';
 		$result['teams'][$tbTitle]['outcomeLabel'] = 'Won';
 	}
-
+else:
+	sp_trace('no game results',$result);
+endif;
 	$result['matchTitle'] = $taTitle . ' ' . get_option( 'sportspress_event_teams_delimiter', 'vs' ) . ' ' . $tbTitle;
 	return $result;
 }
