@@ -109,7 +109,7 @@ function table( $file ) {
 					<tbody>
 						<?php 
 						$row = '';
-						$rowsTotal = 1;
+						$rowsTotal = 2;
 						while ( $rowsTotal-- > 0
 							//( $row = fgetcsv( $handle, 0, $this->delimiter )) !== FALSE 
 							): ?>
@@ -123,9 +123,9 @@ function table( $file ) {
 										elseif( $key == 'sp_section'):
 											$value = 'MD';
 										elseif( $key == 'sp_player'):
-											$value = 'AA AX |BB BX';
+											$value = $rowsTotal == 1 ? 'AA AX |BB BX' : 'CC CX |DD DX';
 										elseif( $key == 'sp_results'):
-											$value = '21|15|21';
+											$value = mt_rand(1,21) . '|' . mt_rand(1,21) . '|' . mt_rand(1,21);
 									endif;
 									?>
 									<td>
@@ -181,8 +181,9 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 	$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
 	$venue = sp_array_value( $_POST, 'sp_venue', '-1' ) == '-1' ? 'baldoyle' : $_POST['sp_venue'];
 	$matchDate = sp_array_value( $_POST, 'sp_match_date', '-1' ) == '-1' ? '2018/02/16' : $_POST['sp_match_date'];
-
-	$event_meta = array('sp_format' => $event_format, 'sp_league' => $league, 'sp_season' => $season, 'sp_date_format' => $date_format, 'sp_venue' => $venue, 'sp_match_date' => $matchDate);
+	$delete_first = empty( $_POST['sp_delete_first'] ) ? false : $_POST['sp_delete_first'];
+	$auto_create_player = empty( $_POST['sp_auto_create_player'] ) ? false : $_POST['sp_auto_create_player'];
+	$event_meta = array('sp_format' => $event_format, 'sp_league' => $league, 'sp_season' => $season, 'sp_date_format' => $date_format, 'sp_venue' => $venue, 'sp_match_date' => $matchDate, 'sp_auto_create_player' => $auto_create_player);
 	//delete all?
 	//$this->delete_all_of_type();
 	//do players exist
@@ -197,7 +198,9 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 	//store results if provided
 	//calc rank points
 	//generate:gw,gl,outcome
-
+	sp_trace('delete_first', $delete_first);
+	if($delete_first)
+		$this->delete_all_of_type();
 	$this->import_matches_r($rows, $event_meta, $this->columns);
 	
 	// Show Result
@@ -210,12 +213,12 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 		 ).'
 	</p></div>';
 
-	sp_trace('columns', $columns);
-	sp_trace('rows', $rows);
-	sp_trace('event_format', $event_format);
-	sp_trace('league', $league);
-	sp_trace('season', $season);
-	sp_trace('date_format', $date_format);
+	// sp_trace('columns', $columns);
+	// sp_trace('rows', $rows);
+	// sp_trace('event_format', $event_format);
+	// sp_trace('league', $league);
+	// sp_trace('season', $season);
+	// sp_trace('date_format', $date_format);
 
 	$this->import_end();
 }
@@ -267,6 +270,18 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 										<label for="post-format-friendly" class="post-format-icon post-format-friendly"><?php _e( 'Friendly', 'sportspress' ); ?></label></li>
 								<br>
 							</fieldset>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label>Delete all</label><br/></th>
+						<td class="forminp forminp-radio" id="sp_formatdiv">
+							<input type="checkbox" name="sp_delete_first" value="true">
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label>Create players</label><br/></th>
+						<td class="forminp forminp-radio" id="sp_formatdiv">
+							<input type="checkbox" name="sp_auto_create_player" value="Y">
 						</td>
 					</tr>
 					<tr>
