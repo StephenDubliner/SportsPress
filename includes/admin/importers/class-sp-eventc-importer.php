@@ -34,42 +34,42 @@ if ( class_exists( 'SP_Event_Importer_Base' ) ) {
 // 	echo '<p><strong>' . __( 'custom handle_upload.', 'sportspress' ) . '</strong><br />';
 // 	return true;
 // }
-		function dispatch() {
-			$this->header();
+	function dispatch() {
+		$this->header();
 
-			if ( ! empty( $_POST['delimiter'] ) )
-				$this->delimiter = stripslashes( trim( $_POST['delimiter'] ) );
+		if ( ! empty( $_POST['delimiter'] ) )
+			$this->delimiter = stripslashes( trim( $_POST['delimiter'] ) );
 
-			if ( ! $this->delimiter )
-				$this->delimiter = ',';
+		if ( ! $this->delimiter )
+			$this->delimiter = ',';
 
-			$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step'];
-			sp_trace('c_dispatch_step',$step);
+		$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step'];
+		sp_trace('c_dispatch_step',$step);
 
-			switch ( $step ):
-				case 0:
-					$this->greet();
-					//check_admin_referer( 'import-upload' );
+		switch ( $step ):
+			case 0:
+				$this->greet();
+				//check_admin_referer( 'import-upload' );
 
-					$this->table( null );
-					break;
-				// case 1:
-				// 	break;
-				case 2:
-					check_admin_referer( 'import-upload' );
-					if ( isset( $_POST['sp_import'] ) ):
-						sp_trace('T_POST[sp_import]',$_POST['sp_import']);
+				$this->table( null );
+				break;
+			// case 1:
+			// 	break;
+			case 2:
+				check_admin_referer( 'import-upload' );
+				if ( isset( $_POST['sp_import'] ) ):
+					sp_trace('T_POST[sp_import]',$_POST['sp_import']);
 
-						$columns = array_filter( sp_array_value( $_POST, 'sp_columns', array( 'post_title' ) ) );
-						$this->import( $_POST['sp_import'], array_values( $columns ) );
+					$columns = array_filter( sp_array_value( $_POST, 'sp_columns', array( 'post_title' ) ) );
+					$this->import( $_POST['sp_import'], array_values( $columns ) );
 
-					else:
-						sp_trace('F_POST[sp_import]',$_POST['sp_import']);
-					endif;
-					break;
-			endswitch;
-			$this->footer();
-		}
+				else:
+					sp_trace('F_POST[sp_import]',$_POST['sp_import']);
+				endif;
+				break;
+		endswitch;
+		$this->footer();
+	}
 function table( $file ) {
 	global $wpdb;
 
@@ -109,12 +109,25 @@ function table( $file ) {
 					<tbody>
 						<?php 
 						$row = '';
-						$rowsTotal = 3;
+						$rowsTotal = 1;
 						while ( $rowsTotal-- > 0
 							//( $row = fgetcsv( $handle, 0, $this->delimiter )) !== FALSE 
 							): ?>
 							<tr>
-								<?php $index = 0; foreach ( $this->columns as $key => $label ): $value = sp_array_value( $row, $index ); ?>
+								<?php 
+								$index = 0; 
+								foreach ( $this->columns as $key => $label ): 
+									$value = sp_array_value( $row, $index ); 
+									if($key=='sp_grade'):
+										$value = '4';
+										elseif( $key == 'sp_section'):
+											$value = 'MD';
+										elseif( $key == 'sp_player'):
+											$value = 'AA AX |BB BX';
+										elseif( $key == 'sp_results'):
+											$value = '21|15|21';
+									endif;
+									?>
 									<td>
 										<input type="text" class="widefat" value="<?php echo esc_attr( $value ); ?>" name="sp_import[]"<?php if ( in_array( $key, $this->optionals ) ) { ?> placeholder="<?php _e( 'Default', 'sportspress' ); ?>"<?php } ?>>
 									</td>
@@ -163,13 +176,13 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 	sp_trace('SP_EventC_Importer_import','Y');
 	// Get event format, league, and season from post vars
 	$event_format = ( empty( $_POST['sp_format'] ) ? false : $_POST['sp_format'] );
-	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
-	$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? false : $_POST['sp_season'] );
+	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? 'bonanza' : $_POST['sp_league'] );
+	$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? '2018' : $_POST['sp_season'] );
 	$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
-	$venue = sp_array_value( $_POST, 'venue', '-1' ) == '-1' ? null : $_POST['venue'];
-	$matchDate = sp_array_value( $_POST, 'matchDate', '-1' ) == '-1' ? null : $_POST['matchDate'];
+	$venue = sp_array_value( $_POST, 'sp_venue', '-1' ) == '-1' ? 'baldoyle' : $_POST['sp_venue'];
+	$matchDate = sp_array_value( $_POST, 'sp_match_date', '-1' ) == '-1' ? '2018/02/16' : $_POST['sp_match_date'];
 
-	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format, 'venue' => $venue, 'matchDate' => $matchDate);
+	$event_meta = array('sp_format' => $event_format, 'sp_league' => $league, 'sp_season' => $season, 'sp_date_format' => $date_format, 'sp_venue' => $venue, 'sp_match_date' => $matchDate);
 	//delete all?
 	//$this->delete_all_of_type();
 	//do players exist
@@ -233,127 +246,6 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 			echo '</div>';
 		}
 
-	public static function get_players_field() {
-		$limit = 2;// get_option( 'sportspress_event_teams', 2 );
-		$teams = array();//(array) get_post_meta( $post->ID, 'sp_team', false );
-		$post_type = 'sp_player';//sp_get_post_mode_type( $post->ID );
-		if ( $limit && 'sp_player' !== $post_type ) {
-			for ( $i = 0; $i < $limit; $i ++ ):
-				$team = array_shift( $teams );
-				?>
-				<div class="sp-instance">
-					<p class="sp-tab-select sp-title-generator">
-					<?php
-					$args = array(
-						'post_type' => $post_type,
-						'name' => 'sp_team[]',
-						'class' => 'sportspress-pages',
-						'show_option_none' => __( '&mdash; None &mdash;', 'sportspress' ),
-						'values' => 'ID',
-						'selected' => $team,
-						'chosen' => true,
-						'tax_query' => array(),
-					);
-					if ( 'yes' == get_option( 'sportspress_event_filter_teams_by_league', 'no' ) ) {
-						$league_id = sp_get_the_term_id( $post->ID, 'sp_league', 0 );
-						if ( $league_id ) {
-							$args['tax_query'][] = array(
-								'taxonomy' => 'sp_league',
-								'terms' => $league_id,
-							);
-						}
-					}
-					if ( 'yes' == get_option( 'sportspress_event_filter_teams_by_season', 'no' ) ) {
-						$season_id = sp_get_the_term_id( $post->ID, 'sp_season', 0 );
-						if ( $season_id ) {
-							$args['tax_query'][] = array(
-								'taxonomy' => 'sp_season',
-								'terms' => $season_id,
-							);
-						}
-					}
-					if ( ! sp_dropdown_pages( $args ) ) {
-						unset( $args['tax_query'] );
-						sp_dropdown_pages( $args );
-					}
-					?>
-					</p>
-					<?php
-					$tabs = array();
-					$sections = get_option( 'sportspress_event_performance_sections', -1 );
-					if ( 0 == $sections ) {
-						$tabs['sp_offense'] = array(
-							'label' => __( 'Offense', 'sportspress' ),
-							'post_type' => 'sp_player',
-						);
-						$tabs['sp_defense'] = array(
-							'label' => __( 'Defense', 'sportspress' ),
-							'post_type' => 'sp_player',
-						);
-					} elseif ( 1 == $sections ) {
-						$tabs['sp_defense'] = array(
-							'label' => __( 'Defense', 'sportspress' ),
-							'post_type' => 'sp_player',
-						);
-						$tabs['sp_offense'] = array(
-							'label' => __( 'Offense', 'sportspress' ),
-							'post_type' => 'sp_player',
-						);
-					} else {
-						$tabs['sp_player'] = array(
-							'label' => __( 'Players', 'sportspress' ),
-							'post_type' => 'sp_player',
-						);
-					}
-					$tabs['sp_staff'] = array(
-						'label' => __( 'Staff', 'sportspress' ),
-						'post_type' => 'sp_staff',
-					);
-					?>
-					<?php if ( $tabs ) { ?>
-					<ul id="sp_team-tabs" class="sp-tab-bar category-tabs">
-						<?php
-							$j = 0;
-							foreach ( $tabs as $slug => $tab ) {
-								?>
-								<li class="<?php if ( 0 == $j ) { ?>tabs<?php } ?>"><a href="#<?php echo $slug; ?>-all"><?php echo $tab['label']; ?></a></li>
-								<?php
-								$j++;
-							}
-						?>
-					</ul>
-					<?php
-						$j = 0;
-						foreach ( $tabs as $slug => $tab ) {
-							do_action( 'sportspress_event_teams_meta_box_checklist', $post->ID, $tab['post_type'], ( 0 == $j ? 'block' : 'none' ), $team, $i, $slug );
-							$j++;
-						}
-					?>
-					<?php } ?>
-				</div>
-				<?php
-			endfor;
-		} else {
-			?>
-			<p><strong>Select Players:</strong></p>
-			<?php
-			$args = array(
-				'post_type' => $post_type,
-				'name' => 'sp_team[]',
-				'selected' => $teams,
-				'values' => 'ID',
-				'class' => 'widefat',
-				'property' => 'multiple',
-				'chosen' => true,
-				'placeholder' => __( 'None', 'sportspress' ),
-			);
-			if ( ! sp_dropdown_pages( $args ) ):
-				sp_post_adder( $post_type, __( 'Add New', 'sportspress' )  );
-			endif;
-		}
-		wp_nonce_field( 'sp-get-players', 'sp-get-players-nonce', false );
-	}
-
 		/**
 		 * options function.
 		 *
@@ -369,8 +261,10 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 						<td class="forminp forminp-radio" id="sp_formatdiv">
 							<fieldset id="post-formats-select">
 								<ul>
-									<li><input type="radio" name="sp_format" class="post-format" id="post-format-league" value="league" checked="checked"> <label for="post-format-league" class="post-format-icon post-format-league"><?php _e( 'Competitive', 'sportspress' ); ?></label></li>
-									<li><input type="radio" name="sp_format" class="post-format" id="post-format-friendly" value="friendly"> <label for="post-format-friendly" class="post-format-icon post-format-friendly"><?php _e( 'Friendly', 'sportspress' ); ?></label></li>
+									<li><input type="radio" name="sp_format" class="post-format" id="post-format-league" value="league" checked="checked"> 
+										<label for="post-format-league" class="post-format-icon post-format-league"><?php _e( 'Competitive', 'sportspress' ); ?></label></li>
+									<li><input type="radio" name="sp_format" class="post-format" id="post-format-friendly" value="friendly">
+										<label for="post-format-friendly" class="post-format-icon post-format-friendly"><?php _e( 'Friendly', 'sportspress' ); ?></label></li>
 								<br>
 							</fieldset>
 						</td>
@@ -383,6 +277,7 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 							'name' => 'sp_league',
 							'values' => 'slug',
 							'show_option_none' => __( '&mdash; Not set &mdash;', 'sportspress' ),
+							'selected' => 'bonanza'
 						);
 						if ( ! sp_dropdown_taxonomies( $args ) ):
 							echo '<p>' . __( 'None', 'sportspress' ) . '</p>';
@@ -398,6 +293,7 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 							'name' => 'sp_season',
 							'values' => 'slug',
 							'show_option_none' => __( '&mdash; Not set &mdash;', 'sportspress' ),
+							'selected' => '2018'
 						);
 						if ( ! sp_dropdown_taxonomies( $args ) ):
 							echo '<p>' . __( 'None', 'sportspress' ) . '</p>';
@@ -408,7 +304,7 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 					<tr>
 						<th scope="row"><label>Match day</label><br/></th>
 						<td>
-<input type="text" class="widefat" value="<?php echo esc_attr( $value ); ?>" name="sp_match_day" placeholder="">
+<input type="text" class="widefat" value="<?php $value='2018/02/16'; echo esc_attr( $value ); ?>" name="sp_match_date" placeholder="">
 							<?php 
 						//SP_EventC_Importer::get_players_field();
 						?></td>
@@ -421,6 +317,7 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 							'name' => 'sp_venue',
 							'values' => 'slug',
 							'show_option_none' => __( '&mdash; Not set &mdash;', 'sportspress' ),
+							'selected' => 'baldoyle'
 						);
 						if ( ! sp_dropdown_taxonomies( $args ) ):
 							// echo '<p>' . __( 'None', 'sportspress' ) . '</p>';
