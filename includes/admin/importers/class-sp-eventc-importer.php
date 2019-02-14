@@ -118,6 +118,7 @@ function table( $file ) {
 								$index = 0; 
 								foreach ( $this->columns as $key => $label ): 
 									$value = sp_array_value( $row, $index ); 
+									$inputType = 'text';
 									if($key=='sp_grade'):
 										$value = '4';
 										elseif( $key == 'sp_section'):
@@ -126,10 +127,11 @@ function table( $file ) {
 											$value = $rowsTotal == 1 ? 'AA AX |BB BX' : 'CC CX |DD DX';
 										elseif( $key == 'sp_results'):
 											$value = mt_rand(1,21) . '|' . mt_rand(1,21) . '|' . mt_rand(1,21);
+											$inputType = 'tel';//number
 									endif;
 									?>
 									<td>
-										<input type="text" class="widefat" value="<?php echo esc_attr( $value ); ?>" name="sp_import[]"<?php if ( in_array( $key, $this->optionals ) ) { ?> placeholder="<?php _e( 'Default', 'sportspress' ); ?>"<?php } ?>>
+										<input type="<?php echo $inputType?>" class="widefat" value="<?php echo esc_attr( $value ); ?>" name="sp_import[]"<?php if ( in_array( $key, $this->optionals ) ) { ?> placeholder="<?php _e( 'Default', 'sportspress' ); ?>"<?php } ?>>
 									</td>
 								<?php $index ++; endforeach; ?>
 								<td class="sp-actions-column">
@@ -319,7 +321,7 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 					<tr>
 						<th scope="row"><label>Match day</label><br/></th>
 						<td>
-<input type="text" class="widefat" value="<?php $value='2018/02/16'; echo esc_attr( $value ); ?>" name="sp_match_date" placeholder="">
+<input type="tel" class="widefat" value="<?php $value='2018/02/16'; echo esc_attr( $value ); ?>" name="sp_match_date" placeholder="">
 							<?php 
 						//SP_EventC_Importer::get_players_field();
 						?></td>

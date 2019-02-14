@@ -271,8 +271,11 @@ class SP_Meta_Box_Event_Results {
 							</td>
 							<?php foreach( $columns as $column => $label ):
 								$value = sp_array_value( $team_results, $column, '' );
+								$inputType = 'text';
+								if(strtolower($column[0])=='g')//todo: solve properly
+									$inputType = 'tel';
 								?>
-								<td><input class="sp-team-<?php echo $column; ?>-input" type="text" name="sp_results[<?php echo $team_id; ?>][<?php echo $column; ?>]" value="<?php echo esc_attr( $value ); ?>"<?php if ( in_array( $column, $auto_columns ) ) { ?> placeholder="<?php _e( '(Auto)', 'sportspress' ); ?>"<?php } ?> /></td>
+								<td><input class="sp-team-<?php echo $column; ?>-input" type="<?php echo $inputType; ?>" name="sp_results[<?php echo $team_id; ?>][<?php echo $column; ?>]" value="<?php echo esc_attr( $value ); ?>"<?php if ( in_array( $column, $auto_columns ) ) { ?> placeholder="<?php _e( '(Auto)', 'sportspress' ); ?>"<?php } ?> /></td>
 							<?php endforeach; ?>
 							<td>
 								<?php
