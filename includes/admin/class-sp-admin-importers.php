@@ -118,6 +118,7 @@ class SP_Admin_Importers {
 	public function events_importerC() {
 		$this->includes();
 
+	    require 'importers/class-sp-event-importer-base.php';
 	    require 'importers/class-sp-eventc-importer.php';
 
 	    // Dispatch

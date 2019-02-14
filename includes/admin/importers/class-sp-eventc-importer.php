@@ -2,8 +2,8 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-if ( class_exists( 'WP_Importer' ) ) {
-	class SP_EventC_Importer extends SP_Importer {
+if ( class_exists( 'SP_Event_Importer_Base' ) ) {
+	class SP_EventC_Importer extends SP_Event_Importer_Base {
 
 		/**
 		 * __construct function.
@@ -166,11 +166,14 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 	$league = ( sp_array_value( $_POST, 'sp_league', '-1' ) == '-1' ? false : $_POST['sp_league'] );
 	$season = ( sp_array_value( $_POST, 'sp_season', '-1' ) == '-1' ? false : $_POST['sp_season'] );
 	$date_format = ( empty( $_POST['sp_date_format'] ) ? 'yyyy/mm/dd' : $_POST['sp_date_format'] );
-	
-	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format);
+	$venue = sp_array_value( $_POST, 'venue', '-1' ) == '-1' ? null : $_POST['venue'];
+	$matchDate = sp_array_value( $_POST, 'matchDate', '-1' ) == '-1' ? null : $_POST['matchDate'];
+
+	$event_meta = array('sp_format' => $event_format, 'league' => $league, 'season' => $season, 'date_format' => $date_format, 'venue' => $venue, 'matchDate' => $matchDate);
 	//delete all?
 	//$this->delete_all_of_type();
 	//do players exist
+	//get the unique id for the import and set in _sp_import
 	//create team if not exist
 	//update team link to the league, season
 	//set the team featured image
@@ -182,7 +185,7 @@ function import( $rows = array(), $columns = array( 'post_title' ) ) {
 	//calc rank points
 	//generate:gw,gl,outcome
 
-	//$this->import_matches($array, $event_meta, $columns);
+	$this->import_matches_r($rows, $event_meta, $this->columns);
 	
 	// Show Result
 	echo '<div class="updated settings-error below-h2"><p>
