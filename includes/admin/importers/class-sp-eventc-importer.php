@@ -102,6 +102,9 @@ function table( $file ) {
 								</th>
 							<?php endforeach; ?>
 							<th scope="col" class="sp-actions-column">
+								<a href="#" title="Team suffix" class="dashicons dashicons-plus-alt sp-add-row sp-add-first"></a>
+							</th>
+							<th scope="col" class="sp-actions-column">
 								<a href="#" title="<?php _e( 'Insert row after', 'sportspress' ); ?>" class="dashicons dashicons-plus-alt sp-add-row sp-add-first"></a>
 							</th>
 						</tr>
@@ -133,7 +136,10 @@ function table( $file ) {
 									<td>
 										<input type="<?php echo $inputType?>" class="widefat" value="<?php echo esc_attr( $value ); ?>" name="sp_import[]"<?php if ( in_array( $key, $this->optionals ) ) { ?> placeholder="<?php _e( 'Default', 'sportspress' ); ?>"<?php } ?>>
 									</td>
+																
 								<?php $index ++; endforeach; ?>
+<td><input type="tel"  class="widefat" value="<?php echo $index;?>"  name="sp_team_suffix"
+								</td>	
 								<td class="sp-actions-column">
 									<a href="#" title="<?php _e( 'Delete row', 'sportspress' ); ?>" class="dashicons dashicons-dismiss sp-delete-row"></a>
 									<a href="#" title="<?php _e( 'Insert row after', 'sportspress' ); ?>" class="dashicons dashicons-plus-alt sp-add-row"></a>

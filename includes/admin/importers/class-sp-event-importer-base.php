@@ -372,7 +372,7 @@ function match_hash($match){
 function teamNameFromPiped_initials($input){
 	//sp_trace('input', $input);
 	$initials = array();
-	$two_players = explode( '|', $input );
+	$two_players = explode( detect_separator($input), $input );
 	foreach ($two_players as $playerTitle) {
 		$titleParts = explode( ' ', $playerTitle );
 		$playerInitials = array();
@@ -388,7 +388,9 @@ function teamNameFromPiped_initials($input){
 	foreach ($initials as $initial) {
 		array_push($resultInitials, implode('', $initial));
 	}
-
+//{player  1 initials} with {player  2 initials}
+//{club} G{grade} {section}{unique id}
+//{root team} G{grade} {section}{unique id}
 	return implode(' with ', $resultInitials);
 	//return 'Team '. md5($input);
 }
@@ -405,6 +407,14 @@ function detect_separator($input){
 
 	return sp_nvl($result, $default_separator);
 }
+function teamNameFromTemplate($parent_team, $grade, $section, $suffix = ''){
+	$result = "$parent_team G$grade $section$suffix";
+	return $result;
+}
+function teamNameShortFromTemplate($parent_team, $grade, $section, $suffix = ''){
+	$result = "$parent_team $section$suffix";
+	return $result;
+}
 function build_match_c($commonDetails, $rowA, $rowB){
 	$result = array();
 	$result['season'] = $commonDetails[5];
@@ -416,8 +426,19 @@ function build_match_c($commonDetails, $rowA, $rowB){
 
 	$result['teams'] = array();
 
-	$points_a = explode( this->(detect_separator($rowA[1])), $rowA[1] );
-	$points_b = explode( this->(detect_separator($rowB[1])), $rowB[1] );
+	$points_a = explode( $this->detect_separator($rowA[1]), $rowA[1] );
+	$points_b = explode( $this->detect_separator($rowB[1]), $rowB[1] );
+
+	$taTitle = $this->teamNameFromPiped_initials($rowA[0]);
+	$team_a_parent = 'Co Dublin';//todo:dynamic
+	$team_b_parent = 'Co Meath';//todo:dynamic
+	$grade = $result['matchGrade'];
+	$section = $result['matchSection'];
+	$suffix_a = $rowA[2];
+	$suffix_b = $rowB[2];
+
+	$taTitle = $this->teamNameFromTemplate($team_a_parent, $grade, $section);
+	$tbTitle = $this->teamNameFromTemplate($team_b_parent, $grade, $section);
 
 	$taTitle = $this->teamNameFromPiped_initials($rowA[0]);
 	$tbTitle = $this->teamNameFromPiped_initials($rowB[0]);
@@ -451,7 +472,7 @@ function build_match_c($commonDetails, $rowA, $rowB){
 	$result['teams'][$taTitle]['players'] = explode( '|', $rowA[0] );
 	$result['teams'][$tbTitle]['players'] = explode( '|', $rowB[0] );
 	sp_trace('points_a', $points_a);
-	if($points_a[0] != 0):
+	if($points_a[0] != 0)://are there any reult points?
 	$agw = 0;
 	$agl = 0;
 	foreach( $points_a as $gkey => $points ):
@@ -505,6 +526,7 @@ else:
 	sp_trace('no game results',$result);
 endif;
 	$result['matchTitle'] = $taTitle . ' ' . get_option( 'sportspress_event_teams_delimiter', 'vs' ) . ' ' . $tbTitle;
+	//{season} {league} {section} {grade} {team 1 short} vs {team 2 short}
 	return $result;
 }
 	}

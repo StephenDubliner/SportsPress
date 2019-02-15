@@ -125,10 +125,10 @@ note reward varies on games format:
 - [ ] 	league/competition
 - [ ] 	logo
 - [ ] 	players to link to the team
-- [ ] match bulk input form for
-- [ ] 	delete all checkbox
-- [ ] 	statics: MatchDay, event, venue, format, season
-- [ ] 	league/competition
+- [x] match bulk input form for
+- [x] 	delete all checkbox
+- [x] 	statics: MatchDay, event, venue, format, season
+- [x] 	league/competition
 - [ ] 	pre-typed defautls based on the last record entered: section, grade
 - [ ] match details view tith push notofocations - autoupdating
 - [ ] match day friendly formatted in the UI
