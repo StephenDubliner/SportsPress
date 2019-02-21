@@ -69,8 +69,14 @@ function sp_nvl($val, $replace)
 {
     if( is_null($val) || $val === '' )  return $replace;
     else                                return $val;
-}}
+}
+}
 
+if( ! function_exists( 'sp_random_date' ) ) {
+function sp_random_date(){
+	return mt_rand(1,28) . '/'. mt_rand(1,12) . '/' . mt_rand(2005,2018);
+}
+}
 /**
  * Get templates passing attributes and including the file.
  *

@@ -1234,6 +1234,9 @@ function match_points_imploded($format, $max){
 	array_push($result, implode ('|' , $points[1]));
 	return $result;
 }
+function build_rank_history_report(){
+	$result = array('player_id' => '', 'date_by' => '', 'rank_points' => '', 'rank_id' => '', 'direction' => '');
+}
 function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 
 	$annual_events = array(
@@ -1338,7 +1341,8 @@ function import_auto_gen( $array = array(), $columns = array( 'post_title' ) ) {
 //2018/12/29,Baldoyle,8,MD,A|B,21|12|21
 //,,,,E|F,15|21|19
 								if($isMatchFirstRow){
-									array_push($raw_import, $annual_events[$event_label]['date']);
+									$matchDate = sp_random_date();//$annual_events[$event_label]['date']
+									array_push($raw_import, );
 									array_push($raw_import, $annual_events[$event_label]['venue']);
 									array_push($raw_import, $team[0]['grade'] . '');
 									array_push($raw_import, $section);

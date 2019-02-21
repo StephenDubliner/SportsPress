@@ -114,12 +114,19 @@ note reward varies on games format:
 - [ ] request GDPR compilance audit (Security Audit Log plugin?)
 
 # General Work Back-log
+- [ ] @NBT Rank history captured
+- [ ]   evaluate dynamic vs static report approach - dynamic should take event closing date as the milestone; sample - lddlc: following every fixture night milestone is produced; bonanza - following closingg Sunday outcomes comes milestone;pbl - each event night is a milestone; in order to keep inclusion the milestones must periodically get marked as reset:no prior data included; history must contain list of milestones - ordered evaluation dates; mark_milestone(input data) => upsert milestone date; gather all resuls up to the date; aggregate the key  metrics; order subject entities(players)
+- [ ] release branches, specific to deployments: wp.config, back.end.dump.sql
+- [ ] spare deployments: SD, KBC, DB, global, demo/test
+- [ ] test how other roles function in admining area
 - [x] test support for singles MS, WS
 - [ ] legal stuff T&C, Privacy, Security, GDPR
 - [ ] winning team in bold on brief match view
 - [ ] quick delete in native SQL call
 - [ ] importer view to add event fixtures in bulk
+- [ ] make every import batch unique so it'd be possible to selectively process
 - [ ] performance stats aggregated on the club / multi-team - PBL CAC
+- [ ] link results to teams
 - [ ] team bulk input form
 - [ ] 	auto team name based on input template
 - [ ] 	league/competition
@@ -130,7 +137,7 @@ note reward varies on games format:
 - [x] 	statics: MatchDay, event, venue, format, season
 - [x] 	league/competition
 - [ ] 	pre-typed defautls based on the last record entered: section, grade
-- [ ] match details view tith push notofocations - autoupdating
+- [ ] match details view with push notofocations - autoupdating
 - [ ] match day friendly formatted in the UI
 - [ ] additional outcome 'retired'
 - [ ] NBT results entering view that records point by point sequence
