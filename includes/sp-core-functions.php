@@ -77,6 +77,36 @@ function sp_random_date(){
 	return mt_rand(1,28) . '/'. mt_rand(1,12) . '/' . mt_rand(2005,2018);
 }
 }
+
+if( ! function_exists( 'sp_random_date_in_range' ) ) {
+// Find a randomDate between $start_date and $end_date
+function sp_random_date_in_range($start_date, $end_date, $format = 'yyyy/mm/dd H:i:s')
+{
+    // Convert to timetamps
+    $min = strtotime($start_date);
+    $max = strtotime($end_date);
+
+    // Generate random number using above bounds
+    $val = rand($min, $max);
+
+    // Convert back to desired date format
+    return date($format, $val);
+}
+}
+
+if( ! function_exists( 'sp_random_date_before' ) ) {
+function sp_random_date_before($cutoff_date, $format = 'yyyy/mm/dd H:i:s')
+{
+    return sp_random_date_in_range(mktime(23, 58, 59, 12, 30, 2000), $cutoff_date, $format);
+}
+}
+
+if( ! function_exists( 'sp_random_date_before' ) ) {
+function sp_random_date_of_year($year, $format = 'yyyy/mm/dd H:i:s')
+{
+    return sp_random_date_in_range(mktime(12, 0, 0, 1, 1, $year), mktime(23, 59, 59, 12, 31, $year), $format);
+}
+}
 /**
  * Get templates passing attributes and including the file.
  *
