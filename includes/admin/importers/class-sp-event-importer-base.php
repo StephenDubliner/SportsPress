@@ -372,7 +372,7 @@ function match_hash($match){
 function teamNameFromPiped_initials($input){
 	//sp_trace('input', $input);
 	$initials = array();
-	$two_players = explode( detect_separator($input), $input );
+	$two_players = explode( $this->detect_separator($input), $input );
 	foreach ($two_players as $playerTitle) {
 		$titleParts = explode( ' ', $playerTitle );
 		$playerInitials = array();
