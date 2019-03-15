@@ -223,6 +223,14 @@ function player_upsert(&$player, $auto_create_player = false){
 				'gender' => sp_arr_nvl($player,'gender')
 				 ) );
 
+			wp_set_object_terms( $player_id, 
+		$player['gender'] == 'F' ?
+		array(59, 60, 62):
+		array(58, 60, 61),
+		// array(62):
+		// array(61),		
+		 'sp_position', true );
+
 	endif;
 	$player['id'] = $player_id;
 }
