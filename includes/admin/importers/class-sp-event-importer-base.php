@@ -136,7 +136,7 @@ function match_upsert(&$match){
 	update_post_meta( $match_id, '_sp_import', 1 );
 
 		// Update event format
-	if ( $match['event_format'] ):
+	if ( array_key_exists($match,'event_format') ):
 		update_post_meta( $match_id, 'sp_format', $match['event_format'] );
 	endif;
 
@@ -317,11 +317,11 @@ function commit_import($import_data = array()){
 				endif;
 
 				$ap = (11 - $match['matchGrade']) * (
-				      $team_match['results']['gap'] 
-					+ $team_match['results']['gbp'] //* 100 
-					+ $team_match['results']['gcp'] //* 10000
-					+ $team_match['results']['gdp']
-					+ $team_match['results']['gep']
+				      sp_arr_nvl($team_match['results'],'gap',0) 
+					+ sp_arr_nvl($team_match['results'],'gbp',0) //* 100 
+					+ sp_arr_nvl($team_match['results'],'gcp',0) //* 10000
+					+ sp_arr_nvl($team_match['results'],'gdp',0)
+					+ sp_arr_nvl($team_match['results'],'gep',0)
 					) / 2;
 				if($team_match['outcomeLabel']=='Won'):
 					$ap = $ap * 1.4;
