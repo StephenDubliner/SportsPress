@@ -122,7 +122,9 @@ note reward varies on games format:
 - [x] test support for singles MS, WS
 - [ ] legal stuff T&C, Privacy, Security, GDPR
 - [ ] winning team in bold on brief match view
-- [ ] quick delete in native SQL call
+- [ ] quick delete in native SQL call 
+	$wpdb->delete( 'wp_posts', array( '_sp_import' => 1 ) );
+	$wpdb->delete( 'wp_post_meta', array( '_sp_import' => 1 ) );
 - [ ] importer view to add event fixtures in bulk
 - [ ] make every import batch unique so it'd be possible to selectively process
 - [ ] performance stats aggregated on the club / multi-team - PBL CAC
@@ -169,3 +171,10 @@ note reward varies on games format:
 - [ ] Automate testing as in https://www.quora.com/What-are-the-best-PHP-testing-frameworks
 	- [ ] processing inputs: player full name, tokenizing, match results constraints, player allowed sections, handling pseudos
 - [ ] Register http://brank.westeurope.cloudapp.azure.com/v1/wp-login.php?action=register
+- [ ] 	User signs up online, producing the consent
+- [ ] 		Register page bot-proof
+- [ ] 		Sign up confirmation email referring to T&C, auto generated password
+- [ ] 		Unsecure login/register page inform of no https
+- [ ] 	User opts out online recalling the consent with immediate effect: take offline or remove all
+- [ ] 	User requests online dump off all his data 
+- [ ] 	Admin can instantly view user consent history
