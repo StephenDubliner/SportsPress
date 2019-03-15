@@ -12,10 +12,10 @@ if ( class_exists( 'WP_Importer' ) ) {
 	sp_trace('event_meta', $event_meta);
 	$rows = array_chunk( $rows_in, sizeof( $columns ) );
 
-	$event_format = sp_nvl($event_meta['event_format'], 'league');;
-	$league = sp_nvl($event_meta['sp_league'], -1);
-	$season = sp_nvl($event_meta['sp_season'], -1);
-	$date_format = sp_nvl($event_meta['sp_date_format'],'yyyy/mm/dd');
+	$event_format = sp_arr_nvl($event_meta,'event_format', 'league');;
+	$league = sp_arr_nvl($event_meta,'sp_league', -1);
+	$season = sp_arr_nvl($event_meta,'sp_season', -1);
+	$date_format = sp_arr_nvl($event_meta,'sp_date_format','yyyy/mm/dd');
 
 	// Get labels from result and performance post types
 	//$result_labels = sp_get_var_labels( 'sp_result' );
@@ -186,7 +186,7 @@ function team_upsert(&$team_data){
 }
 function player_upsert(&$player, $auto_create_player = false){
 	$player_title = $player['title'];
-	$player_obj = get_page_by_title( stripslashes( $player_title ), OBJECT, 'sp_player' );
+	$player1_object = get_page_by_title( stripslashes( $player_title ), OBJECT, 'sp_player' );
 	$player_id = null;
 	$player_number = null;
 	// Get or insert player
@@ -208,19 +208,19 @@ function player_upsert(&$player, $auto_create_player = false){
 
 		// Update number
 		update_post_meta( $player_id, 'sp_number', $player_id );
-		if($player['nationality'] != '')
+		if(array_key_exists('nationality', $player) && $player['nationality'] != '')
 			update_post_meta( $player_id, 'sp_nationality', $player['nationality']);
 
 		update_post_meta( $player_id, 'sp_metrics', 
 			array(
-				'grade' => $player['grade'],
-				'pseudo' => $player['pseudo'],
-				'usepseudo' => $player['usepseudo'],
-				'bi' => $player['bi'],
-				'height' => $player['height'],
-				'club' => $player['club'],
-				'playrorl' => $player['playrorl'],
-				'gender' => $player['gender']
+				'grade' => sp_arr_nvl($player,'grade'),
+				'pseudo' => sp_arr_nvl($player,'pseudo'),
+				'usepseudo' => sp_arr_nvl($player,'usepseudo'),
+				'bi' => sp_arr_nvl($player,'bi'),
+				'height' => sp_arr_nvl($player,'height'),
+				'club' => sp_arr_nvl($player,'club'),
+				'playrorl' => sp_arr_nvl($player,'playrorl'),
+				'gender' => sp_arr_nvl($player,'gender')
 				 ) );
 
 	endif;
@@ -249,8 +249,6 @@ function commit_import($import_data = array()){
 			// Update event results
 			//$event_results = array();
 			$event_results[$team_id] = $team_match['results'];
-			$outcome_object = get_page_by_title( stripslashes( $outcome ), OBJECT, 'sp_outcome' );
-
 
 			$outcome = $team_match['outcomeLabel'];
 			// Get or insert outcome

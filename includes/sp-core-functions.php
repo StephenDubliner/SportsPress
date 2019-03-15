@@ -71,6 +71,12 @@ function sp_nvl($val, $replace)
     else                                return $val;
 }
 }
+if( ! function_exists( 'sp_arr_nvl' ) ) {
+function sp_arr_nvl($ar, $key, $replace = null)
+{
+	return array_key_exists($key, $ar)? sp_nvl($ar[$key], $replace) : $replace;
+}
+}
 
 if( ! function_exists( 'sp_random_date' ) ) {
 function sp_random_date(){
