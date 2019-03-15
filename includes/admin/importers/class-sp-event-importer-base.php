@@ -136,7 +136,7 @@ function match_upsert(&$match){
 	update_post_meta( $match_id, '_sp_import', 1 );
 
 		// Update event format
-	if ( array_key_exists($match,'event_format') ):
+	if ( array_key_exists('event_format', $match) ):
 		update_post_meta( $match_id, 'sp_format', $match['event_format'] );
 	endif;
 
