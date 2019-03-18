@@ -290,7 +290,7 @@ function match_hash($match){
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 
 	$rows = array_chunk( $array, 8 );//sizeof( $columns )
-	$event_format = $this->nvl($event_meta['sp_format'], false);;
+	$event_format = $this->nvl($event_meta['sp_format'], true);;
 	$league = $this->nvl($event_meta['league'], -1);;
 	$season = $this->nvl($event_meta['season'], -1);
 	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
