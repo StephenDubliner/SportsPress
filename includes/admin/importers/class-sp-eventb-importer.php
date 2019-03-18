@@ -290,7 +290,7 @@ function match_hash($match){
 function import_matches( $array = array(), $event_meta = array(), $columns = array( 'post_title' ) ) {
 
 	$rows = array_chunk( $array, 8 );//sizeof( $columns )
-	$event_format = $this->nvl($event_meta['event_format'], false);;
+	$event_format = $this->nvl($event_meta['sp_format'], false);;
 	$league = $this->nvl($event_meta['league'], -1);;
 	$season = $this->nvl($event_meta['season'], -1);
 	$date_format = $this->nvl($event_meta['date_format'],'yyyy/mm/dd');
@@ -516,7 +516,8 @@ endif;
 		update_post_meta( $match_id, 'sp_results', $event_results );
 		
 		update_post_meta( $match_id, 'sp_specs', array('grade'=> $match['matchGrade'], 'section'=> $match['matchSection'] ));//winfactor lostfactor
-
+	
+		update_post_meta( $match_id, 'sp_eventsection', $match['matchSection'] );//winfactor lostfactor
 	endforeach;
 	// Add player performance to last event if available
 	if ( isset( $match_id ) && isset( $players ) && sizeof( $players ) > 0 ):
