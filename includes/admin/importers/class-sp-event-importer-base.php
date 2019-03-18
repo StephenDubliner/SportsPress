@@ -12,7 +12,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 	sp_trace('event_meta', $event_meta);
 	$rows = array_chunk( $rows_in, sizeof( $columns ) );
 
-	$event_format = sp_arr_nvl($event_meta,'event_format', 'league');;
+	$event_format = sp_arr_nvl($event_meta,'sp_format', 'league');;
 	$league = sp_arr_nvl($event_meta,'sp_league', -1);
 	$season = sp_arr_nvl($event_meta,'sp_season', -1);
 	$date_format = sp_arr_nvl($event_meta,'sp_date_format','yyyy/mm/dd');
@@ -64,7 +64,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 
 	$import_data['season'] = $season;
 	$import_data['league'] = $league;
-	$import_data['event_format'] = $event_format;
+	$import_data['sp_format'] = $event_format;
 	$import_data['date_format'] = $date_format;
 	$import_data['matches'] = array();
 	foreach ( $matches as $match ):
@@ -136,8 +136,8 @@ function match_upsert(&$match){
 	update_post_meta( $match_id, '_sp_import', 1 );
 
 		// Update event format
-	if ( array_key_exists('event_format', $match) ):
-		update_post_meta( $match_id, 'sp_format', $match['event_format'] );
+	if ( array_key_exists('sp_format', $match) ):
+		update_post_meta( $match_id, 'sp_format', $match['sp_format'] );
 	endif;
 
 	// Update league
